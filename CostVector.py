@@ -3,14 +3,14 @@ import QNET
 class CostVector:
     allCostVectors = []
 
-    def __init__(self, costs = {'loss': 0}):
+    def __init__(self, costs = {'loss': 0.0}):
         self.costs = costs
         QNET.CostVector.allCostVectors.append(self)
         QNET.CostVector.reformat()
 
     def __str__(self):
-        return('Cost vector: ' + str(self.costs))
-    
+        return('Cost vector: ' + self.costs)
+
     @staticmethod
     def reformat():
         keys = []

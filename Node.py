@@ -3,7 +3,7 @@ import QNET
 class Node:
     allNodes = []
 
-    def __init__(self, name = ''):
+    def __init__(self, name = 'QNET Node'):
         self.name = name
         self.channels = []
         self.costs = QNET.CostVector()
