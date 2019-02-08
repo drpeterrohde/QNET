@@ -12,9 +12,11 @@ class Node:
     def __str__(self):
         return('Node: ' + self.name)
 
-    def connectTo(self, dest):
+    def connectTo(self, dest, costs = {'loss': 0}):
         channel = QNET.Channel('QNET Channel', self, dest)
+        channel.setCosts(costs)
         self.channels.append(channel)
+        dest.channels.append(channel)
         return(channel)
 
     def setCosts(self, costs):

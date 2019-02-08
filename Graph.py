@@ -21,6 +21,10 @@ class Graph:
                 self.adjacencyMatrix[sourceIndex, destIndex] = cost
 
         self.adjacencyMatrix = validate_graph(self.adjacencyMatrix, True)
+        
+        for node in nodes:
+            index = nodes.index(node)
+            self.adjacencyMatrix[index, index] = 0
 
     def shortestPath(self, Alice, Bob, method = 'auto'):
         solution = shortest_path(self.adjacencyMatrix, method, directed = True, return_predecessors = True, indices = [Alice, Bob])
