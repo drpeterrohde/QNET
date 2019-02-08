@@ -6,7 +6,6 @@ from scipy.sparse.csgraph import reconstruct_path
 
 class Graph:
     def __init__(self, nodes, attributeKey = 'loss'):
-        # make inifinity \comment
         self.adjacencyMatrix = np.zeros((len(nodes), len(nodes)))
 
         for node in nodes:
@@ -24,5 +23,5 @@ class Graph:
         self.adjacencyMatrix = validate_graph(self.adjacencyMatrix, True)
 
     def shortestPath(self, Alice, Bob, method = 'auto'):
-        solution = shortest_path(self.adjacencyMatrix, method, return_predecessors = True)#, indices = [Alice, Bob])
+        solution = shortest_path(self.adjacencyMatrix, method, directed = True, return_predecessors = True, indices = [Alice, Bob])
         return(solution)
