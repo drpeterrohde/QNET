@@ -3,18 +3,15 @@ import scipy
 import numpy
 
 class Graph:
-    def __init__(self, nodes, attributeKey = ''):
+    def __init__(self, nodes, attributeKey = 'loss'):
         self.adjacencyMatrix = numpy.zeros((len(nodes), len(nodes)))
 
-        for i in range(1,len(nodes)):
+        for i in range(0,len(nodes)-1):
             neighbours = nodes[i].channels
-            for j in neighbours:
-                destIndex = nodes.index(j.dest)
-                cost = j.cost
-                if attributeKey == '':
-                    self.adjacencyMatrix[i,destIndex] = cost
-                else:
-                    self.adjacencyMatrix[i,destIndex] = cost[attributeKey]
+            for nchan in neighbours:
+                destIndex = nodes.index(nchan.dest)
+                cost = nchan.cost
+                self.adjacencyMatrix[i, destIndex] = cost[attributeKey]
 
     def shortestPath(self, Alice, Bob, method = ''):
         return 0

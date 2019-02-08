@@ -7,7 +7,7 @@ class Channel:
         self.name = ''
         self.source = source
         self.dest = dest
-        self.costs = QNET.CostVector()
+        self.cost = QNET.CostVector()
         QNET.Channel.allChannels.append(self)
 
     def __str__(self):

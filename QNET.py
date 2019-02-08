@@ -5,5 +5,4 @@ from CostVector import *
 from Graph import *
 
 def info():
-    print('QNET v0.1a')
-    print('by Maria Kieferova & Peter Rohde')
+    print('QNET (February 2019) - by Maria Kieferova & Peter Rohde')

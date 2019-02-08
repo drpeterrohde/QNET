@@ -3,7 +3,7 @@ import QNET
 class CostVector:
     allCostVectors = []
 
-    def __init__(self, costs = {}):
+    def __init__(self, costs = {'loss': 0}):
         self.costs = costs
         QNET.CostVector.allCostVectors.append(self)
         QNET.CostVector.reformat()
@@ -16,15 +16,15 @@ class CostVector:
         keys = []
 
         for vector in QNET.CostVector.allCostVectors:
-            keys.append(vector.keys())
+            keys += vector.costs.keys()
         uniqueKeys = list(set(keys))
 
         for vector in QNET.CostVector.allCostVectors:
             for key in uniqueKeys:
-                if key not in vector.costs:
+                if key not in vector.costs.keys():
                     vector.costs[key] = 0
-        
-    @staticmethod
+
+    @staticmethod   
     def add(costVectors):
         sum = QNET.CostVector()
 
