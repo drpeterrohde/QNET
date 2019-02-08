@@ -5,7 +5,7 @@ class Node:
 
     def __init__(self):
         self.name = ''
-        self.ports = []
+        self.channels = []
         self.costs = QNET.CostVector()
         QNET.Node.allNodes.append(self)
 

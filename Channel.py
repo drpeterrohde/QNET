@@ -3,9 +3,10 @@ import QNET
 class Channel:
     allChannels = []
 
-    def __init__(self):
+    def __init__(self, source = False, dest = False):
         self.name = ''
-        self.ports = [QNET.Node(), QNET.Node()]
+        self.source = source
+        self.dest = dest
         self.costs = QNET.CostVector()
         QNET.Channel.allChannels.append(self)
 
