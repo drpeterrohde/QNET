@@ -12,3 +12,9 @@ class Channel:
 
     def __str__(self):
         return('Channel: ' + self.name + '\n ' + str(self.cost))
+
+    def setCosts(self, costs):
+        self.cost.costs = costs
+
+    def setCost(self, attributeKey, value):
+        self.cost.costs[attributeKey] = value
