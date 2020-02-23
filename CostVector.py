@@ -5,12 +5,13 @@ class CostVector:
 
     def __init__(self, costs = {'loss': 0.0}):
         self.costs = costs
-        QNET.CostVector.allCostVectors.append(self)
-        QNET.CostVector.reformat()
+        #QNET.CostVector.allCostVectors.append(self)
+        #QNET.CostVector.reformat()
 
     def __str__(self):
-        return('Cost vector: ' + self.costs)
+        return(f'Cost vector: {self.costs}')
 
+    # Still not sure what reformat does...
     @staticmethod
     def reformat():
         keys = []
