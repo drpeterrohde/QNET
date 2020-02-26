@@ -1,5 +1,6 @@
 import QNET
 from CostVector import CostVector
+import numpy as np
 
 # TODO:
 # Tidy up so we only have to import QNET
@@ -36,3 +37,24 @@ class Channel:
     # print cost attributes of the channel
     def printCost(self):
         print(self.cost.costs)
+        
+    def distance(self):
+        sx, sy, sz = self.source.coords
+        dx, dy, dz = self.dest.coords
+        return np.sqrt( (sx - dx)**2 + (sy - dy)**2 + (sz - dz)**2)
+    
+def Fiber(Channel):
+    def __init__(self, 
+                 name = 'QNET Fibre',
+                 source = False,
+                 dest = False,
+                 attenuation = 0.0):
+        super().__init__(name, source, dest)
+        self.channelType = 'swapper'
+        
+    def getLoss(self):
+        # Calculate of fiber
+        dist = self.distance()
+        dBLoss = dist * self.attenuation
+        return dBLoss
+        

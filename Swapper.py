@@ -45,10 +45,10 @@ vx = 30
 vy = 0
 
 # STATIC CHANNEL LOSSES
-lossAG1 = 12
-lossG1T = 12
-lossTG2 = 12
-lossG2B = 12
+lossAG1 = 15
+lossG1T = 15
+lossTG2 = 15
+lossG2B = 15
 
 # MAX TIME AND RESOLUTION
 tMax = 10

@@ -1,9 +1,15 @@
 import QNET
 from Node import Node
+from Node import Ground
 from Node import Satellite
+from Node import Swapper
+from Node import PBS
+from Node import CNOT
 from Channel import Channel
+from Channel import Fiber
 from reader import readData
-import copy
+from collections import namedtuple
+import json
 
 # TODO:
 # Tidy up so we only have to import QNET
@@ -20,6 +26,9 @@ class Network:
         return('Network: ' + self.name +
             '\n Nodes: ' + str(len(self.nodes)) + ', Channels: ' + str(len(self.channels)))
     
+    # DICTIONARY OF OBJECT CLASSES
+    classDict = {'Node':Node, 'Ground':Ground, 'Satellite':Satellite, 'Swapper':Swapper, 
+               'PBS':PBS, 'CNOT':CNOT, 'Channel':Channel, 'Fiber':Fiber}
     
     ######### BASICS ##########
 
@@ -29,9 +38,21 @@ class Network:
        
     def addChannel(self, channel):
         self.channels.append(channel)
+        
+    # Takes an unspecified object, identifies it, and adds it to network
+    def addToNetwork(self, obj):
+        if (isinstance(obj, Node) == True):
+            self.addNode(obj)
+        elif (isinstance(obj, Channel) == True):
+            self.addNode(obj)
+        else:
+            print("Invalid object warning! Couldn't add to network")
     
     
     #### USELESS FUNCTION? ####
+        
+    # Not a useless function but uses an outdated method. 
+        
     # Given a name in self.nodeNames, gets the node
     # Else returns none
     def getNode(self, name):
@@ -42,9 +63,21 @@ class Network:
         else:
             return None
     
+    # If chan exists between nodeA and nodeB return it. Else return None
+    def getChanfromNodes(self, nodeA, nodeB):
+        for channel in self.channels:
+            if channel.source == nodeA and channel.dest == nodeB:
+                return channel
+            elif channel.source == nodeB and channel.dest == nodeA:
+                return channel
+            else:
+                return None
+            
+    
     
     ####### PARSERS ######
-        
+    
+    # OUTDATED
     # Reads in nodes from a specified file and adds them to network
     def readNodes(self, file):
         nodeData = readData(file)
@@ -73,13 +106,8 @@ class Network:
             
             i += 1
             self.addNode(newNode)
-        
-        """
-        for newNode in nodeData[name]:
-            newNode = Node(newNode)
-        """
-            
-            # self.nodes.append(newNode)
+
+
     
     def readChannels(self, file):
         edgeData = readData(file)
@@ -115,6 +143,24 @@ class Network:
             sourceNode.connectTo(destNode)
             
             i += 1
+    
+    
+    
+    #### TODO #####
+            
+    # Read from JSON takes a json file and returns the corresponding network
+    def readFromJSON(self, fileName):
+        with open(fileName, 'r') as file:
+            data = json.load(file)
+        
+        # Data contains a list of QNET objects that we need to assign to classes
+        for obj in data:
+            obj = json.dumps(obj)
+            newObj = json.loads(obj, object_hook=lambda d: namedtuple('X', d.keys())(*d.values()))
+            # DEBUG
+            print(newObj.coords)
+            
+            # newObj = self.classDict[obj.classType](json = obj)
     
     
     ############ PRINTING ##############
@@ -185,6 +231,8 @@ class Network:
                 node.undistribute('loss')
     
 
+
+
     ########## PATH FETCHING AND MANIPULATION #########
     
     # Given a path of channels, prints the pathCost
@@ -193,6 +241,7 @@ class Network:
         for channel in chanPath:
             totalCost += channel.cost.costs[costType]
         return totalCost
+    
     
     # getPathFromList constructs a list of nodes from network N specified by a List
     # Useful for obtaining paths, however it does NOT check if the path is valid
@@ -228,6 +277,24 @@ class Network:
                     pathChannels.append(channel)
             i += 1
         return pathChannels
+    
+    
+    # TODO: CHECK IF WORKS
+    def removePath(self, path):
+        # Suppose path is given to us as an array of nodes
+        i = 0
+        while i < len(path) - 1:
+            channel = self.getChanfromNodes(path[i], path[i+1])
+            del channel
+        
+        # Is deleting the channel going to delete all references to the channel in the nodes?
+        # TEST:
+        for node in path:
+            for channel in node.channels:
+                print(f"{channel.source} <-> {channel.dest}")
+        
+        # Check and see if any nodes
+        
         
         
             

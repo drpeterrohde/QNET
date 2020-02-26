@@ -1,13 +1,19 @@
 import QNET
 import numpy as np
+import scipy
+from pvlib import atmosphere
 
 class Node:
-    def __init__(self, name = 'QNET Node', coords = [None]*3 ):
+    
+    # nodeAtrDict = {'name':name}
+    
+    def __init__(self, name = 'QNET Node', coords = [None]*3):
         self.name = name
         self.coords = coords
         self.channels = []
         self.cost = QNET.CostVector()
         self.nodeType = 'NA'
+        
 
     def __str__(self):
         return('Node: ' + self.name)
@@ -53,11 +59,7 @@ class Node:
 class Ground(Node):
     def __init__(self, name = 'QNET Ground', coords = [None]*3):
         super().__init__(name, coords)
-        """
-        At the moment this class isn't any different from node', but I
-        anticipate in the future that it might have attributes like
-        firing rate
-        """
+        self.nodeType = 'ground'
 
 
 class Satellite(Node):   
@@ -75,11 +77,40 @@ class Satellite(Node):
         self.nodeType = 'satellite'
         
     
-    # Currently just takes a target node and returns a value proportional
-    # to distance. Will make more sophisticated calc in future.
     def costFunc(self, target):
+        
+        alt = self.coords[2]
+        
+        # Calculate ground distance from source to target:
         dist = self.distance(target)
-        return dist * 0.1
+        
+        # Calculate azimuthal angle 
+        theta = np.arcsin(alt / dist)
+        
+        
+        """
+        Line integral for effective density
+        
+          / L'
+         |     rho(L * sin(theta)) dL
+        /   0
+        """
+        
+        def rho(L, theta):
+            # From altitude, calculate pressure
+            # Assume T = 288.15K and 0% humidity
+            P = atmosphere.alt2pres(L * np.sin(theta))
+            T = 288.15
+            R = 287.058 # Specific gas constant of air
+            return P / (R * T)
+        
+        # Perform numerical integreation to get effective density (?)
+        result = scipy.integrate.quad(rho, 0, dist, args = (theta))[0]
+        
+        return result * 0.1
+        
+        # Original toy loss function
+        # return dist * 0.1
     
     
     def posUpdate(self, dt):
@@ -96,6 +127,7 @@ class Satellite(Node):
                 self.coords[i] = self.coords[i] + MAX
             i += 1
         return
+    
     
     # Inputs: self, network
     # Returns List of nodes in satellite's range
@@ -134,19 +166,19 @@ class Swapper(Node):
         for channel in self.channels:
             oldCost = channel.cost.costs[costType]
             newCost = oldCost + swapperLoss / 2
-            channel.cost.costs[costType] = newCost
+            channel.cost.costs[costType] = newCost    
     
-    def undistribute(self, costType):
-        swapperLoss = 1/self.prob
-        for channel in self.channels:
-            oldCost = channel.cost.costs[costType]
-            newCost = oldCost - swapperLoss / 2
-            channel.cost.costs[costType] = newCost
-            
-            # DEBUG
-            print(f"{channel.name} oldCost == {oldCost}")
-            print(f"{channel.name} newCost == {newCost}\n")
-    
-    
-    
+class PBS(Swapper):
+    def __init__(self,
+                 name = 'PBS Swapper',
+                 coords = [None]*3,
+                 prob = 0.5):
+        super().__init__(name, coords)
+        
+class CNOT(Swapper):
+    def __init__(self,
+                 name = 'PBS Swapper',
+                 coords = [None]*3,
+                 prob = 1):
+        super().__init__(name, coords)
     
