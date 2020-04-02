@@ -13,193 +13,65 @@ by as much as possible.
 
 @author: hudson
 """
-import QNET
-from Node import Node
-from Node import Satellite
-from Network import Network
-from Channel import Channel
-import matplotlib.pyplot as plt
-import numpy as np
 import networkx as nx
+import QNET
+import matplotlib.pyplot as plt
 
 ######## USER INPUTS ########
 
 # Node positions:
-posA = [0,0,0]
+posA = [50,0,0]
 posG = [100, 0, 0]
-posB = [200, 0, 0]
-
+posB = [150, 0, 0]
 
 # Satellite positions and initial Velocities:
 posS = [0,0,100]
-vx = 20
-vy = 0
+vsat = [20, 0]
 
 # STATIC CHANNEL LOSSES
-lossAG = 15
-lossGB = 15
+lossAG = 16
+lossGB = 16
 
 # MAX TIME AND RESOLUTION
 tMax = 10
 dt = 0.1
 
-####### FUNCTIONS #######
-
-def getTimeArr(tMax, dt):
-    return np.arange(0, tMax, dt)
-
-# Returns an array of optimal loss costs over time
-def getOptimalLossArray(N, S, source, target, tMax, dt):
-    
-    # Remember initial satellite position
-    initx = S.coords[0]
-    inity = S.coords[1]
-    initz = S.coords[2]
-    
-    # Initialise arrays
-    lossArr = []
-    sizeArr = tMax // dt + 1
-    
-    # Initialise satellite channel
-    S.updateChannels()
-    
-    i = 0
-    while i < sizeArr:
-        
-        # Calculate optimal path cost and append it to costArr:
-        X = QNET.q2x(N)
-        loss = nx.dijkstra_path_length(X, source.name, target.name, weight = 'loss')
-        lossArr.append(loss)
-        
-        # Update satellite position
-        S.posUpdate(dt)
-        
-        # Update satellite channels
-        S.updateChannels()
-        
-        i += 1
-    
-    # Return satellite back to original position
-    S.coords[0] = initx
-    S.coords[1] = inity
-    S.coords[2] = initz
-    
-    return lossArr
-
-# Returns an array of a satellite path over time
-# I.E. source -> satellite -> target
-def getLossArray(N, S, source, target, tMax, dt):
-    
-    # Remember initial satellite position
-    initx = S.coords[0]
-    inity = S.coords[1]
-    initz = S.coords[2]
-    
-    # Initialise arrays:
-    lossArr = []
-    sizeArr = tMax // dt + 1
-    
-    i = 0
-    while i < sizeArr:
-        # Debug
-        sourceLoss = S.costFunc(source)
-        targetLoss = S.costFunc(target)
-        
-        totalLoss = sourceLoss + targetLoss
-        lossArr.append(totalLoss)
-        
-        # Update satellite position
-        S.posUpdate(dt)
-        
-        i += 1
-    
-    # Return satellite back to original position
-    S.coords[0] = initx
-    S.coords[1] = inity
-    S.coords[2] = initz
-    
-    return lossArr
-        
-
-# Plots the distance of the satellite to a given node over time
-def posPlot(N, sat, target, sizeArr, dt):
-    posArr = []
-    i = 0
-    while i < sizeArr:
-        
-        # Update position and append it to posArr
-        sat.posUpdate(dt)
-        pos = sat.distance(target)
-        posArr.append(pos)
-        
-        i += 1
-    
-    timeArr = np.arange(0, dt*(sizeArr), dt)
-    plt.plot(timeArr, posArr)
-    plt.xlabel("Time")
-    plt.ylabel("Distance")
-    plt.title(f"Distance between satellite and {target.name}")
-    plt.show()
-    
-    
-
 ####### INITIALIZATIONS #######
 
 # Initialise Network and Nodes
-N = Network()
-A = Node('A', posA)
-B = Node('B', posB)
-G = Node('G', posG)
+X = nx.Graph()
 
-# Add nodes to network
-N.addNode(A)
-N.addNode(B)
-N.addNode(G)
+# Create qnet nodes and add them to graph as nodes
+A = QNET.Qnode('A', posA)
+B = QNET.Qnode('B', posB)
+G = QNET.Qnode('G', posG)
 
-#  ADD SATELLITE
-# (height, vx, vy, name, coordinates)
-S = Satellite(vx, vy, 'Tesla Roadster', posS)
-N.addNode(S)
+X.add_nodes_from([A, B, G])
 
-# INITIALIZE CHANNELS
-chAG = Channel(source = A, dest = G)
-chGB = Channel(source = G, dest = B)
-chAS = Channel(source = A, dest = S)
-chBS = Channel(source = B, dest = S)
+# Create satellite and add to graph as node:
+S = QNET.Satellite('S', posS, vsat)
+X.add_node(S)
 
-# ADD CHANNELS TO NETWORK
-N.addChannel(chAG)
-N.addChannel(chGB)
-N.addChannel(chAS)
-N.addChannel(chBS)
-
-# ADD COSTS TO STATIC CHANNELS
-chAG.setCost('loss', lossAG)
-chGB.setCost('loss', lossGB)
-
-# ADD INITIAL COST TO SATELLITE CHANNELS
-chAS.setCost('loss', S.costFunc(A))
-chAS.setCost('loss', S.costFunc(B))
-
-
-# TEST SATELLITE NODE UPDATES
-# N.printNodes()
+# Add edges
+X.add_edge(A,G, loss = lossAG)
+X.add_edge(G,B, loss = lossGB)
+X.add_edge(A,S, loss = QNET.airCost(A, S))
+X.add_edge(S,B, loss = QNET.airCost(S, B))
 
 
 ######## MAIN ########
 
-timeArr = getTimeArr(tMax, dt)
-optLossArr = getOptimalLossArray(N, S, A, B, tMax, dt)
-LossArr = getLossArray(N, S, A, B, tMax, dt)
+# Get loss arrays:
+lossArrays = QNET.getLossArrays(X, 'A', 'B', 'loss', tMax, dt)
+optLossArr = QNET.getOptimalLossArray(X, 'A', 'B', 'loss', tMax, dt)
 
-# PLOT CONSTANT COST FUNCTION FOR GB CHANNEL
-staticCostArr = (lossAG + lossGB) * np.ones(len(timeArr))
-plt.plot(timeArr, staticCostArr, label = 'Cost of path AB')
+# Get time array:
+timeArr = QNET.getTimeArr(tMax, dt)
 
-# PLOT COST FUNCTION FOR GSB CHANNEL
-plt.plot(timeArr, LossArr, label = 'Cost of path ASB')
+plt.plot(timeArr, lossArrays[0])
+plt.plot(timeArr, lossArrays[1])
  
-# PLOT OPTIMAL COST FUNCTION FROM G TO B
+# Plot optimal cost:
 line = plt.plot(timeArr, optLossArr, linestyle = ':', c = 'k', label = 'Optimal Path Cost')
 plt.setp(line, linewidth = 3)
 
@@ -207,12 +79,12 @@ plt.setp(line, linewidth = 3)
 plt.xlabel('time')
 plt.ylabel('cost')
 plt.title('Optimal path cost from A to B with moving satellite')
-plt.legend()
+# plt.legend()
 plt.show()
 
-
 ##### DEBUGGING #####
-# print(LossArr)
+mysteryNode = QNET.getNode(X, 'A')
+assert(A == mysteryNode)
     
 
 
