@@ -1,36 +1,84 @@
 import QNET
-import networkx as nx
+import Utilities
+import numpy as np
+import scipy.integrate
+from pvlib import atmosphere
+import warnings
+
+# If qnode doesn't have a name, consider having a global counter that
+# keeps track of number of nodes and just names it after the number
 
 class Qnode:
-    
+
 ########## MAGICS ##########
-    def __init__(self, name = 'Qnode', coords = [None]*3, costVec = None):
-        self.name = name
-        self.coords = coords
-        self.costVec = QNET.CostVector()
+    def __init__(self, **kwargs):
+        """
+
+        Parameters
+        ----------
+        **kwargs : dict
+            Key word arguements specifying the node
+            
+            'name': str
+                The name of the qnode. 
+                "Is everyone with one face called a Milo?"
+                - The Dodecahedron
+            'qnode_type': str
+                The class of qnode. Defaults to none.
+                Choose from {'Ground', 'Satellite', 'Swapper'}
+            'coords': array
+                Spatial cartesian coordinates
+                [x,y,z]
+            
+            Satellite kwargs
+            ----------------
+            'velocity': array
+                Velocity of satellite
+                [vx,vy]
+            Swapper kwargs
+            --------------
+            'prob': float
+                Probability of a successful swap
+
+        Returns
+        -------
+        None.
+
+        """        
+        # Attempts to pop 'name' from kwarg dict. 
+        # If not found, defaults to 'Qnode'
+        self.name = kwargs.pop('name', 'Qnode')
+        self.coords = kwargs.pop('coords', [0]*3)
+        self.kwarg_warning(kwargs)
         
     def __str__(self):
-        return('Node: ' + self.name)
+        # TODO: Make more sophisticated prints for different node types
+        return('Qnode.name: ' + self.name + " -- " + "Coords:" + str(self.coords) + " -- " + str(type(self)))
     
+    def kwarg_warning(self, kwargs):
+        if len(kwargs) > 0:
+            warnings.warn(f"The following key word arguments could not be initialised for for \'{self.name}\': {kwargs}")
 
 ########## SUB CLASSES ##########
 
 class Ground(Qnode):
-    def __init__(self, name = 'ground', coords = [None]*3):
-        super().__init__(name, coords)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        # name = 'ground', coords = [0]*3
         
 
 class Satellite(Qnode):   
     # self, height, vx, vy, name, coords
-    def __init__(self,
-                 name = 'satellite',
-                 coords = [None]*3,
-                 velocity = [None]*2,
-                 satRange = 100):
+    def __init__(self, **kwargs):
+        self.velocity = kwargs.pop('velocity', [0]*2)
+        self.satRange = kwargs.pop('satRange', 100)
+        super().__init__(**kwargs)
         
-        super().__init__(name, coords)
-        self.satRange = satRange
-        self.velocity = velocity
+        """
+        # TODO: Make this warning look cleaner
+        if (self.velocity == [0]*2):
+            warnings.warn(message = f"Satellite \'{self.name}\' has no velocity")
+        """
     
     def posUpdate(self, dt):
         
@@ -47,46 +95,77 @@ class Satellite(Qnode):
             i += 1
         return
     
+    def distance(self, node):
+        
+        x = self.coords[0]
+        y = self.coords[1]
+        z = self.coords[2]
+        
+        nx = node.coords[0]
+        ny = node.coords[1]
+        nz = node.coords[2]
+        
+        return np.sqrt((x - nx)**2 + (y - ny)**2 + (z - nz)**2)
     
-    # OUTDATED
-    def nodesInRange(self, network):
-        nodesInRange = []
-        for node in network.nodes:
-            if (self.distance(node) < self.satRange):
-                nodesInRange.append(node)
-        return nodesInRange
+    def airCost(self, node):
+        alt = self.coords[2]
+        
+        # Calculate ground distance from source to target:
+        dist = self.distance(node)
+            
+        # Calculate azimuthal angle 
+        theta = np.arcsin(alt / dist)
+            
+            
+        """
+        Line integral for effective density
+            
+          / L'
+         |     rho(L * sin(theta)) dL
+        /   0
+        """
+            
+        def rho(L, theta):
+            
+            # From altitude, calculate pressure
+            # Assume T = 288.15K and 0% humidity
+            P = atmosphere.alt2pres(L * np.sin(theta))
+            T = 288.15
+            R = 287.058 # Specific gas constant of air
+            return P / (R * T)
+            
+        # Perform numerical integreation to get effective density (?)
+        result = scipy.integrate.quad(rho, 0, dist, args = (theta))[0]
+        
+        # Attenuation constant:
+        K = 0.001
+        return result * K
+        
     
-  
+        # OUTDATED
+        def nodesInRange(self, network):
+            nodesInRange = []
+            for node in network.nodes:
+                if (self.distance(node) < self.satRange):
+                    nodesInRange.append(node)
+            return nodesInRange
+     
 class Swapper(Qnode):   
     # prob is probability of succesful swapping between nodes
-    def __init__(self,
-                 name = 'swapper',
-                 coords = [None]*3,
-                 prob = 0.5):
-        super().__init__(name, coords)
-        self.prob = prob
-        self.nodeType = 'swapper'
-    
-    # TODO
-    def distribute(self, costType):
-        swapperLoss = 1/self.prob
-        
-        for channel in self.channels:
-            oldCost = channel.cost.costs[costType]
-            newCost = oldCost + swapperLoss / 2
-            channel.cost.costs[costType] = newCost    
-
+    def __init__(self, **kwargs):
+        self.prob = kwargs.pop('prob', 0.5)
+        self.loss = QNET.P2L(self.prob)
+        super().__init__(**kwargs)
 
 class PBS(Swapper):
     def __init__(self,
-                 coords = [None]*3,
+                 coords = [0]*3,
                  prob = 0.5):
         super().__init__(coords)
 
-
 class CNOT(Swapper):
     def __init__(self,
-                 coords = [None]*3,
+                 coords = [0]*3,
                  prob = 1):
         super().__init__(coords)
     
