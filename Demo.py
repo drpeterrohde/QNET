@@ -50,7 +50,7 @@ def plotPaths(G, sourceName, targetName, costType, tMax, dt):
     plt.plot(timeArr, purArr, label = 'Purified cost')
         
     # Get the array of optimal costs over time
-    optArr = QNET.getOptimalLossArray(G, sourceName, targetName, costType, tMax, dt)
+    optArr = QNET.getOptimalLossArray(G, sourceName, targetName, costType, tMax, dt, with_purification = True)
     line = plt.plot(timeArr, optArr, linestyle = ':', c = 'k', label = 'Optimal Path Cost')
     plt.setp(line, linewidth = 3)  
     
@@ -58,15 +58,16 @@ def plotPaths(G, sourceName, targetName, costType, tMax, dt):
     plt.show()
 
 ##### DEMO #####
+# Uncomment the lines of code for each test to see them in action
 
 tMax = 10
 dt = 0.1
 
 # Test Graph 1
-# QNET.plotPaths(X1, 'A', 'B', 'loss', tMax, dt)
+# plotPaths(X1, 'A', 'B', 'loss', tMax, dt)
 
 # Test Graph 2
-# QNET.plotPaths(X2, 'A', 'B', 'loss', tMax, dt)
+# plotPaths(X2, 'A', 'B', 'loss', tMax, dt)
 
 # Test Graph 3
 # print(X3.purify('A', 'B'))

@@ -20,8 +20,8 @@ posS = [0,0,100]
 vsat = [20, 0]
 
 # STATIC CHANNEL LOSSES
-lossAG = 0.2
-lossGB = 0.2
+lossAG = 0.15
+lossGB = 0.15
 
 ####### INITIALIZATIONS #######
 
