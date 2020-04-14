@@ -124,7 +124,7 @@ def getLossArrays(G, sourceName, targetName, costType, tMax, dt):
     
     return pathDict
 
-def getOptimalLossArray(G, sourceName, targetName, costType, tMax, dt):
+def getOptimalLossArray(G, sourceName, targetName, costType, tMax, dt, with_purification = True):
     """
     Calculate the costs of the lowest cost path from "source" to "target" over time
 
@@ -171,10 +171,13 @@ def getOptimalLossArray(G, sourceName, targetName, costType, tMax, dt):
         pur_loss = C.purify(sourceName, targetName)
         
         # Compare costs, add the lower of the two:
-        if loss < pur_loss:
-            lossArr.append(loss)
+        if with_purification:
+            if loss < pur_loss:
+                lossArr.append(loss)
+            else:
+                lossArr.append(pur_loss)
         else:
-            lossArr.append(pur_loss)
+            lossArr.append(loss)
         
         # Update satellites
         C.update(dt)

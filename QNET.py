@@ -10,4 +10,3 @@ def info():
     print('QNET (February 2019) - by Hudson Leone, Maria Kieferova, & Peter Rohde')
         
     
-        
