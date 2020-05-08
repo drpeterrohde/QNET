@@ -253,4 +253,54 @@ def posPlot(u, v, tMax, dt):
     plt.title(f"Distance between {u.name} and {v.name} over {tMax} time units")
     plt.show()    
 
+from mpl_toolkits.mplot3d import art3d
+
+def Qnet3dPlot(Q):
+    """
+    Produces a static 3d plot of a Qnet graph
+
+    Parameters
+    ----------
+    Q : Qnet()
+        Qnet Graph
+
+    Returns
+    -------
+    None.
+
+    """
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+
+    # Note widget requires external packkage jupyter matplotlib
+    # %matplotlib widget
+
+    for node in Q.nodes:
+        x = node.coords[0]
+        y = node.coords[1]
+        z = node.coords[2]
+
+        # Dictionary between colours and node types
+        qnode_color = {QNET.Qnode: 'r', QNET.Ground: 'y', QNET.Swapper: 'c', QNET.Satellite: 'b'}
+
+        ax.scatter(x, y, z, c=qnode_color[type(node)], marker='o')
+        ax.text(x, y, z, '%s' % node.name, size=12, zorder=1)
+
+        # Todo: Figure out how to offset text.
+
+    for edge in Q.edges:
+        xs = [edge[0].coords[0], edge[1].coords[0]]
+        ys = [edge[0].coords[1], edge[1].coords[1]]
+        zs = [edge[0].coords[2], edge[1].coords[2]]
+
+        if (isinstance(edge[0], QNET.Satellite) or isinstance(edge[1], QNET.Satellite)):
+            line = art3d.Line3D(xs, ys, zs, linestyle='--')
+
+        else:
+            line = art3d.Line3D(xs, ys, zs)
+
+        ax.add_line(line)
+    
+    plt.show(fig)
+    # return fig
     

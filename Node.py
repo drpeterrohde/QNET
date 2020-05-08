@@ -52,8 +52,14 @@ class Qnode:
         self.kwarg_warning(kwargs)
         
     def __str__(self):
-        # TODO: Make more sophisticated prints for different node types
-        return('Qnode.name: ' + self.name + " -- " + "Coords:" + str(self.coords) + " -- " + str(type(self)))
+        return self.name
+        # Formerly:
+        # Qnode.name: ' + self.name + " -- " + "Coords:" + str(self.coords) + " -- " + str(type(self))
+    
+    def __repr__(self):
+        return self.name
+        # Possible add on:
+        # f'{self.__class__.__name__}('f'{self.color!r}, {self.mileage!r})'
     
     def kwarg_warning(self, kwargs):
         if len(kwargs) > 0:

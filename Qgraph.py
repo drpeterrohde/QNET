@@ -21,6 +21,20 @@ class Qnet(nx.Graph):
     
     def __init__(self, incoming_graph_data=None, **attr):
         super().__init__(incoming_graph_data, **attr)
+        
+    def __str__(self):
+        qnodes = ""
+        for node in self.nodes():
+            qnodes += (node.name)
+            qnodes += ', '
+            
+        qchans = ""
+        for chan in self.edges():
+            edge_data = self.get_edge_data(chan[0], chan[1])
+            qchans += str(chan[0].name + " <--> " + chan[1].name + " -- Costs: " + str(edge_data))
+            qchans += "\n"
+            
+        return(f"Qnodes:\n{qnodes}\n\nQchans:\n{qchans}")
     
     ### QNET functions ###
     def add_qnode(self, **kwargs):
@@ -302,3 +316,24 @@ class Qnet(nx.Graph):
             return purFid
         else:
             assert(False), "Invalid return type in purify.\n Usage: return_as = {'loss', 'fid}"
+            
+    
+    ### IN PROGRESS ###
+    def low_purify(self, path1, path2, return_as = 'loss'):
+        
+        # If the paths are not QNET paths, make them
+        if not isinstance(path1, QNET.Path):
+            path1 = QNET.Path(G = self, array = path1)
+        if not isinstance(path2, QNET.Path):
+            path2 = QNET.Path(G = self, array = path2)
+        
+        # Check that both paths start and finish in the same place
+        assert(path1.head() == path2.head()), "Paths do not start in the same place."
+        assert(path1.tail() == path2.tail()), "Paths do not end in the same place."
+        
+        def fidTransform(F1, F2):
+            return (F1 * F2) / (F1 * F2 + (1 - F1) * (1 - F2) )
+        
+        # Todo: Calc and return
+        
+        

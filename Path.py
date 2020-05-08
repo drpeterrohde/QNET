@@ -18,41 +18,39 @@ class Path:
         assert(array != None), "path.__init__ recieved an empty array"
         
         self.G = G
-        # TODO: name_array is redundant now
-        self.name_array = None
-        self.node_array = None
-        
-        # Check if array has strings or nodes, allocate accordingly
-        if (isinstance(array[0], str)):
-            self.name_array = array
-            
-        elif (type(array[0] == QNET.Qnode())):
+        self.node_array = []
+
+        if all(isinstance(node, QNET.Qnode) for node in array):
             self.node_array = array
-        
-        # Check that allocation has been made. Raise exeption if not
-        assert (self.name_array != None or
-                self.node_array != None), "path.__init__ requires an array of nodes or node names for initialization"
-        
-        # If name_array is empty, use node_array to fill it up
-        if self.name_array != None:
-            node_array = []
-            for name in self.name_array:
+
+        elif all(isinstance(node, str) for node in array):
+            for name in array:
                 node = G.getNode(name)
-                node_array.append(node)
-            self.node_array = node_array
-        
-        # If node_array is empty, use name_array to fill it up
-        elif self.node_array != None:
-            name_array = []
-            for node in self.node_array:
-                name = node.name
-                name_array.append(name)
-            self.name_array = name_array
+                self.node_array.append(node)
+        else:
+            assert(False), "Path __init__ requires an array of strings or Qnodes"
             
-        ## TODO: Assert path is valid ##
+        # Assert path is valid
+
+        ## TODO: Not working
+        for i in range(len(self.node_array) - 1):
+            if (self.node_array[i], self.node_array[i+1]) in G.edges():
+                pass
+            elif (self.node_array[i+1], self.node_array[i]) in G.edges():
+                pass
+            else:
+                assert (False), f"Path {self.stringify()} does not exist in Qnet."
+
+        # Potentially shorter way of doing it?
+        #if all([(array[i], array[i + 1]) in G.edges() for i in range(len(array) - 1)
+        #        or (array[i + 1], array[i]) in G.edges() for i in range(len(array) - 1)]):
+        #    pass
             
     def __str__(self):
-        return(str(self.stringify()))
+        return(self.stringify())
+    
+    def __repr__(self):
+        return(self.stringify())
     
     def cost(self, costType):
         """
@@ -69,19 +67,6 @@ class Path:
         int
 
         """
-        
-        # UNIT CONVERSIONS
-        def P2L(P):
-            return -1 * np.log(P)
-
-        # Convert loss to success probability
-        def L2P(L):
-            return np.exp(-L) 
-        
-        # Convert loss to fidelity
-        def L2F(L):
-            return np.exp(-L)
-        
         cost = 0
         pathLen = len(self.node_array)
         i = 0
@@ -103,7 +88,7 @@ class Path:
             
         # Convert cost to specified costType
         if costType == 'fid':
-            return L2F(cost)
+            return QNET.L2F(cost)
         else:
             return cost
     
@@ -117,8 +102,7 @@ class Path:
 
         """
         return self.G.subgraph(self.array)
-    
-    # TODO: Test
+
     def stringify(self):
         """
 
@@ -137,3 +121,9 @@ class Path:
             if i < len(self.node_array):
                 pString = pString + "-"
         return pString
+    
+    def head(self):
+        return self.node_array[0]
+    
+    def tail(self):
+        return self.node_array[len(self.node_array) - 1]
