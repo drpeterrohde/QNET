@@ -8,6 +8,7 @@ Created on Tue Mar 24 17:22:47 2020
 
 import networkx as nx
 import QNET
+import numpy as np
 import copy
 import warnings
 
@@ -82,27 +83,60 @@ class Qnet(nx.Graph):
         for data in nbunch:
             self.add_qnode(**data)
             
-    def add_qchan(self, **kwargs):
+    def add_qchan(self, edge = None, e = 1, p = 1, px = 0, py = 0, pz = 0, **kwargs):
         """
-        Parameters
-        ----------
-        **kwargs : TYPE
-            DESCRIPTION.
-
-        Returns
-        -------
-        None.
-
+        :param list edge: Array-like object of two qnodes to be connected
+        :param float e: Proportion of photons that pass through the channel
+        :param float p: Proportion of surviving photons that haven't changed state
+        :param float px: Probability of x-flip (Bitflip)
+        :param float py: Probability of y-flip
+        :param float pz: Probability of z-flip (Dephasing)
+        :param float kwargs: Other costs or qualifying attributes
+        :return: None
         """
-        assert len(kwargs) > 0
-        edge = kwargs.pop('edge', None)
-        assert (edge != None), "\'edge\' is a required key word arguement for qchan"
-        assert (len(edge) == 2), "'\edge\' must be an array-like object of length 2"
+
+        def make_cost_vector(e, p, px, py, pz, **kwargs):
+            """
+            Makes cost vector for qchan with attributes passed from add_qchan.
+            Checks that values given are valid.
+            :return dictionary:
+            """
+            cost_vector = {'e': e, 'p': p, 'px': px, 'py': py, 'pz': pz}
+
+            for cost in cost_vector:
+                assert (0 <= cost_vector[cost] and cost_vector[
+                    cost] <= 1), f"Probability \"{cost} = {cost_vector[cost]}\" out of range"
+
+            # Initialize log probabilities
+            log_dict = {}
+            for cost in cost_vector:
+                x = cost_vector[cost]
+                if x != 0:
+                    log = -1 * np.log(x) + 0
+                else:
+                    log = 'NaN'
+                log_dict["d" + cost] = log
+
+            # Combine dictionaries
+            cost_vector.update(log_dict)
+
+            for attr in kwargs:
+                cost_vector[attr] = kwargs[attr]
+
+            # Set fidelity
+            cost_vector['fid'] = 1 - cost_vector['px'] - cost_vector['py'] - cost_vector['pz']
+            return cost_vector
+
+        # Assert edge is valid
+        assert (edge != None), "\'edge\' must be an array-like object of two qnodes"
+        assert (len(edge) == 2), "\'edge\' must be an array-like object of two qnodes"
         
         u = self.getNode(edge[0])
         v = self.getNode(edge[1])
-        
-        self.add_edge(u, v, **kwargs)
+
+        cost_vector = make_cost_vector(p, e, px, py, pz, **kwargs)
+        self.add_edge(u, v, **cost_vector)
+
             
     def add_qchans_from(self, cbunch):
         """

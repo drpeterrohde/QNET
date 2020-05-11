@@ -1,24 +1,124 @@
-import matplotlib.animation as animation
-# Plot functions
+"""
+3d animation test for QNET
+"""
+
+# Networks
+import networkx as nx
+import QNET
+
+# Utilities
+import numpy as np
+import random
+import array
+import copy
+
+#Plot functions
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.mplot3d import art3d
 
-import QNET
-# Qnet Graph
+# Animations
+import matplotlib.animation as animation
+from IPython.display import HTML
+
+# Interactive widgets
+from ipywidgets import interact, interactive, fixed, interact_manual
+import ipywidgets as widgets
+
+# Sample Qnet Graphs
+from Graph1 import X as X1
 from Graph2 import X as X2
 
-# Note, widgets only work with jupyter notebook
-# %matplotlib widget
 
-## This function takes a Qnet graph and returns a figure
-def Qnet3dPlot(Q):
+def get_data(G, tMax, dt):
+    """
+    Generates the positions of nodes in the graph over time
+    # In future, maybe want to generate cost as well?
+
+    Args:
+        G (Qnet): Qnet graph
+        dt (float): Time increment
+        tMax (float): Maximum time
+
+    Returns:
+        list: list of node positions for each node over time
+    """
+    Q = copy.deepcopy(G)
+
+    data = []
+
+    i = 0
+    while i * dt < tMax:
+
+        # initialise list of coordinates for timestep
+        coord_list = []
+
+        # Get node data and append it to coord_list
+        for node in Q:
+            coords = copy.copy(node.coords)
+            coord_list.append(coords)
+
+        # Append coord list to data and increment time
+        data.append(coord_list)
+
+        Q.update(dt)
+        i += 1
+
+    return data
+
+
+def animate(i, data, scatters, lines):
+    """
+    Update data for scatters and lines
+    This function is passed in as an argument for FuncAnimation
+
+    Args:
+        i (int): Iteration number
+        data (list): Data passed in from get_data
+        scatters: Scatter objects
+        lines: Line objects
+
+    Returns:
+        collection of modified scatter objects (points)
+        ## Note, would also like to update lines, not obvious how that would work.
+    """
+
+    # Offset points
+    for j in range(len(scatters)):
+        scatters[j]._offsets3d = (data[i][j][0], data[i][j][1], data[i][j][2])
+
+    # Todo:
+    # Problem here maybe?
+    # "Scatter function of matplotlib expects object with len and not number?""
+
+    return scatters
+    # Redraw lines
+
+
+def Qnet3dAnim(G, tMax, dt):
+    """
+    Initializes a 3d plot, gets simulation data over time
+
+    Args:
+        G: Qnet Graph
+        tMax: Time that simulation is run over
+        dt: timestamp resolution
+
+    Returns:
+        None
+
+    """
+
+    Q = copy.deepcopy(G)
+
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
 
-    # Note widget requires external packkage jupyter matplotlib
-    # %matplotlib widget
+    scatters = []
+    lines = []
 
-    for node in X2.nodes:
+    # Initialize scatters
+    for node in Q.nodes:
         x = node.coords[0]
         y = node.coords[1]
         z = node.coords[2]
@@ -26,50 +126,59 @@ def Qnet3dPlot(Q):
         # Dictionary between colours and node types
         qnode_color = {QNET.Qnode: 'r', QNET.Ground: 'y', QNET.Swapper: 'c', QNET.Satellite: 'b'}
 
-        ax.scatter(x, y, z, c=qnode_color[type(node)], marker='o')
+        new_scatter = ax.scatter(x, y, z, c=qnode_color[type(node)], marker='o')
         ax.text(x, y, z, '%s' % node.name, size=12, zorder=1)
 
-        # Todo: Figure out how to offset text.
+        scatters.append(new_scatter)
 
+    # Initialize lines
     for edge in X2.edges:
         xs = [edge[0].coords[0], edge[1].coords[0]]
         ys = [edge[0].coords[1], edge[1].coords[1]]
         zs = [edge[0].coords[2], edge[1].coords[2]]
 
-        # TODO: Set custom line styles depending on which nodes are being connected
         # TODO: Label lines with costs
 
         if (isinstance(edge[0], QNET.Satellite) or isinstance(edge[1], QNET.Satellite)):
             line = art3d.Line3D(xs, ys, zs, linestyle='--')
-
         else:
             line = art3d.Line3D(xs, ys, zs)
 
+        lines.append(line)
         ax.add_line(line)
 
-    return fig
+    # Get data for Qnet over time
+    data = get_data(Q, tMax, dt)
 
-def QnetAnimation(Q, dt):
-    # TODO:
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
+    # Number of iterations
+    i = len(data)
 
-    # Setting the axes properties
-    ax.set_xlim3d([0.0, 1.0])
+    # Set axis properties
     ax.set_xlabel('X')
-
-    ax.set_ylim3d([0.0, 1.0])
     ax.set_ylabel('Y')
-
-    ax.set_zlim3d([0.0, 1.0])
     ax.set_zlabel('Z')
+    ax.set_title('Qnet Graph in Time')
 
-    ax.set_title('3D Test')
+    # Get animation
+    """
+    matplotlib.animation.FuncAnimation(fig, func, frames=None,
+                                    init_func=None, fargs=None, 
+                                    save_count=None, *, cache_frame_data=True, 
+                                    **kwargs)
+    """
 
-    # Creating the Animation object
-    animation.FuncAnimation(Qnet3dPlot(Q), func=Q.update, frames=500,
-                                       fargs=(dt), interval=50, blit=False)
+    anim = animation.FuncAnimation(fig, animate, i, fargs=(data, scatters, lines), interval=100, blit=False,
+                                   repeat=True)
+    # From animation generate video
 
-    plt.show()
+    # Option 1:
+    HTML(anim.to_html5_video())
 
-QnetAnimation(X2, dt=0.01)
+    # Option 2:
+    # HTML(anim.to_jshtml())
+
+    return
+
+
+import QNET
+Qnet3dAnim(X2, tMax=10, dt=0.1)
