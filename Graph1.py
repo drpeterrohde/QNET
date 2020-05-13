@@ -15,9 +15,10 @@ posA = [50,0,0]
 posG = [100, 0, 0]
 posB = [150, 0, 0]
 
-# Satellite positions and initial Velocities:
+# Satellite arguements:
 posS = [0,0,100]
 vsat = [20, 0]
+range = 100
 
 # STATIC CHANNEL LOSSES
 lossAG = 0.15
@@ -31,7 +32,7 @@ X = QNET.Qnet()
 Qnodes = [{'name': 'A', 'coords': posA},
           {'name': 'B', 'coords': posB},
           {'name': 'G', 'qnode_type':'Ground', 'coords': posG},
-          {'name': 'S', 'qnode_type':'Satellite', 'coords': posS, 'velocity':vsat},
+          {'name': 'S', 'qnode_type':'Satellite', 'coords': posS, 'velocity':vsat, 'range':range},
           ]
 
 X.add_qnodes_from(Qnodes)
@@ -45,7 +46,5 @@ Qchans = [{'edge':('A','G'),'loss':lossAG},
           {'edge':('A','S'),'loss':lossAS},
           {'edge':('B','S'),'loss':lossBS},
           ]
-
-# (X.getNode('S')).airCost(X.getNode('B')
 
 X.add_qchans_from(Qchans)

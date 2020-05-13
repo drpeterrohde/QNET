@@ -21,9 +21,10 @@ posT = [150, 0, 0]
 posG2 = [200, 0, 0]
 posB = [250, 0, 0]
 
-# Satellite positions and initial Velocities:
+# Satellite arguements
 posS = [0,0,100]
 vSat = [30, 0]
+range = 100
 
 # STATIC CHANNEL COSTS
 # Loss of 0.05 corresponds to ~95% success probability
@@ -46,7 +47,7 @@ nbunch = [{'name':'A', 'coords': posA},
           {'name':'G1', 'coords': posG1, 'qnode_type':'Ground'},
           {'name':'G2', 'coords': posG2, 'qnode_type': 'Ground'},
           {'name':'T', 'coords': posT, 'qnode_type': 'Swapper'},
-          {'name':'S', 'coords': posS, 'qnode_type': 'Satellite', 'velocity':vSat},
+          {'name':'S', 'coords': posS, 'qnode_type': 'Satellite', 'velocity':vSat, 'range':range},
           ]
 
 X.add_qnodes_from(nbunch)

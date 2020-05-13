@@ -38,26 +38,29 @@ class Qnet(nx.Graph):
         return(f"Qnodes:\n{qnodes}\n\nQchans:\n{qchans}")
     
     ### QNET functions ###
-    def add_qnode(self, **kwargs):
+    def add_qnode(self, qnode_type = None, **kwargs):
         """
-        From a tuple, initializes a qnode and adds it to a graph
-        
-        TODO: How to initialize a docstring for **kwargs?
+        Initialize a qnode of some type and add it to the grah
 
+        :param str qnode_type: qnode subclass
+        :param kwargs: Keyword arguments needed to initialize the qnode
+
+        :return: None
         """
-        
-        # If type is something, intialise with that.
-        
-        # Check that arguements exist
+
+        # Check that arguments exist
         assert len(kwargs) > 0
-        # Pop node type from kwarg dict and initialise a node of that type
-        qnode_type = kwargs.pop('qnode_type', None)
+
+        # If type is specified, initialize qnode of that type
         if qnode_type != None:
             # Check if qnode_type is valid
             assert(qnode_type in typeDict), f"Unsupported qnode type: \'{qnode_type}\'"
             newNode = typeDict[qnode_type](**kwargs)
-            self.add_node(newNode)
-        # If type not specified, initialise default node type
+
+            # TODO: Add additional cost vector dict?
+            self.add_node(newNode, **newNode.costs)
+
+        # Else, initialize default qnode
         else:
             newNode = QNET.Qnode(**kwargs)
             self.add_node(newNode)
@@ -76,10 +79,6 @@ class Qnet(nx.Graph):
             
         
         """
-        # Currently works for an array of dictionaries
-        
-        # Basically want all or most of the data options that networkX can handle.
-        
         for data in nbunch:
             self.add_qnode(**data)
             
@@ -95,38 +94,6 @@ class Qnet(nx.Graph):
         :return: None
         """
 
-        def make_cost_vector(e, p, px, py, pz, **kwargs):
-            """
-            Makes cost vector for qchan with attributes passed from add_qchan.
-            Checks that values given are valid.
-            :return dictionary:
-            """
-            cost_vector = {'e': e, 'p': p, 'px': px, 'py': py, 'pz': pz}
-
-            for cost in cost_vector:
-                assert (0 <= cost_vector[cost] and cost_vector[
-                    cost] <= 1), f"Probability \"{cost} = {cost_vector[cost]}\" out of range"
-
-            # Initialize log probabilities
-            log_dict = {}
-            for cost in cost_vector:
-                x = cost_vector[cost]
-                if x != 0:
-                    log = -1 * np.log(x) + 0
-                else:
-                    log = 'NaN'
-                log_dict["d" + cost] = log
-
-            # Combine dictionaries
-            cost_vector.update(log_dict)
-
-            for attr in kwargs:
-                cost_vector[attr] = kwargs[attr]
-
-            # Set fidelity
-            cost_vector['fid'] = 1 - cost_vector['px'] - cost_vector['py'] - cost_vector['pz']
-            return cost_vector
-
         # Assert edge is valid
         assert (edge != None), "\'edge\' must be an array-like object of two qnodes"
         assert (len(edge) == 2), "\'edge\' must be an array-like object of two qnodes"
@@ -134,7 +101,7 @@ class Qnet(nx.Graph):
         u = self.getNode(edge[0])
         v = self.getNode(edge[1])
 
-        cost_vector = make_cost_vector(p, e, px, py, pz, **kwargs)
+        cost_vector = QNET.make_cost_vector(p, e, px, py, pz, **kwargs)
         self.add_edge(u, v, **cost_vector)
 
             
@@ -232,11 +199,9 @@ class Qnet(nx.Graph):
                     
                     # Update edge
                     self.add_edge(edge[0], edge[1], loss = newCost)
-                    
-    
-    def unwrap(self, sourceName, targetName):
+
+    def purify(self, sourceName, targetName):
         """
-        Generates a dictionary of all simple paths from source to dest with losses as values
 
         Parameters
         ----------
@@ -244,59 +209,6 @@ class Qnet(nx.Graph):
             Name of source node
         targetName : str
             Name of destination node
-
-        Returns
-        -------
-        pathDict : dict
-            Dictionary with paths as keys and losses as values
-
-        """
-        # Create graph copy:
-        C = copy.deepcopy(self)
-        
-        source = C.getNode(sourceName)
-        target = C.getNode(targetName)
-    
-        # initialize dictionary
-        pathDict = {}
-        
-        while(nx.has_path(C, source, target)):
-            
-            # TODO
-            # Might be a generator, not a path
-            shortest = QNET.Path(C, nx.shortest_path(C, source, target, weight = 'loss'))
-            
-            # Get path cost: (possibly buggy)
-            shortCost = shortest.cost(costType = 'loss')
-            
-            # Add path and cost to pathDict
-            pathDict[shortest] = shortCost
-            
-            # Require that paths are disjoint
-            # Hence remove all nodes from shortest except source and target
-            for node in shortest.node_array:
-                if node != source and node != target:
-                    C.remove_node(node)
-                    
-            assert(C.has_node(source))
-            assert(C.has_node(target))
-                
-        return pathDict
-    
-       
-    def purify(self, sourceName, targetName, return_as = 'loss'):
-        """
-        Calculate the purified cost from source to target
-        
-        Parameters
-        ----------
-        sourceName : str
-            Name of source node
-        targetName : str
-            Name of destination node
-        return_as : str, optional
-            Specify the units to recieve the calculation in. 
-            Choose between {'loss', 'fid'}. The default is 'loss'.
 
         Returns
         -------
@@ -307,50 +219,39 @@ class Qnet(nx.Graph):
         
         def fidTransform(F1, F2):
             return (F1 * F2) / (F1 * F2 + (1 - F1) * (1 - F2) )
-        
-        # Array of path fidelities
-        fidArr = []
-        
-        # Unwrap graph into dictionary of QNET paths to losses
-        pathDict = self.unwrap(sourceName, targetName)
-        
-        # Extract fidelities
-        for key in pathDict:
-            loss = pathDict[key]
-            # Convert from loss to fid
-            fid = QNET.L2P(loss)
-            fidArr.append(fid)
-        
-        assert(len(fidArr) != 0), "Error in Qnet.Purify: No path exists from SourceName to targetName"
-        
-        # Is there at least one fid s.t. fid > 0.5? If not, return max fidelity
-        if all(i < 0.5 for i in fidArr):
-            if return_as == 'loss':
-                return(QNET.P2L(max(fidArr)))
-            elif return_as == 'fid':
-                return(max(fidArr))
+
+        # Get paths for Graph
+        u = self.getNode(sourceName)
+        v = self.getNode(targetName)
+        generator = nx.all_simple_paths(self, u, v)
+
+        # Get p values for each path
+        p_arr = []
+        for path in generator:
+            new_path = QNET.Path(self, path)
+            # check if path is valid
+            if new_path.is_valid() == True:
+                p = new_path.cost('p')
+                p_arr.append(p)
             else:
-                assert(False), "Invalid return type in purify.\n Usage: return_as = {'loss', 'fid}"
-                
-        
+                pass
+
+        assert(len(p_arr) != 0), f"No path exists from {sourceName} to {targetName}"
+
         # Initialize purified fidelity as the max fidelity value
-        purFid = max(fidArr)
-        fidArr.remove(purFid)
+        pure_cost = max(p_arr)
+        p_arr.remove(pure_cost)
         
         # Purify fidelities together
-        while (len(fidArr) != 0):
-            maxfid = max(fidArr)
-            if maxfid > 0.5:
-                purFid = fidTransform(purFid, maxfid)
-            fidArr.remove(maxfid)
-        
-        if return_as == 'loss':
-            return(QNET.P2L(purFid))
-        elif return_as == 'fid':
-            return purFid
-        else:
-            assert(False), "Invalid return type in purify.\n Usage: return_as = {'loss', 'fid}"
-            
+        while (len(p_arr) != 0):
+            pmax = max(p_arr)
+            if pmax > 0.5:
+                pure_cost = fidTransform(pure_cost, pmax)
+            elif pmax <= 0.5:
+                break
+            p_arr.remove(pmax)
+
+        return pure_cost
     
     ### IN PROGRESS ###
     def low_purify(self, path1, path2, return_as = 'loss'):

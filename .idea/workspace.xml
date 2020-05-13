@@ -3,13 +3,12 @@
   <component name="ChangeListManager">
     <list default="true" id="e84bdf82-fe58-45b5-b532-1e191725560c" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.ipynb_checkpoints/3d_demo-checkpoint.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/.ipynb_checkpoints/3d_demo-checkpoint.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/3d_demo.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/3d_demo.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/3dtest.py" beforeDir="false" afterPath="$PROJECT_DIR$/3dtest.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Channel.py" beforeDir="false" afterPath="$PROJECT_DIR$/Channel.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Graph1.py" beforeDir="false" afterPath="$PROJECT_DIR$/Graph1.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Graph2.py" beforeDir="false" afterPath="$PROJECT_DIR$/Graph2.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Node.py" beforeDir="false" afterPath="$PROJECT_DIR$/Node.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Path.py" beforeDir="false" afterPath="$PROJECT_DIR$/Path.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Qgraph.py" beforeDir="false" afterPath="$PROJECT_DIR$/Qgraph.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Utilities.py" beforeDir="false" afterPath="$PROJECT_DIR$/Utilities.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/repr_test.py" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -46,7 +45,7 @@
       <recent name="$PROJECT_DIR$" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.scratch_2">
+  <component name="RunManager" selected="Python.scratch_3">
     <configuration name="3dtest" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="QNET" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -83,28 +82,6 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Path.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="scratch" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="QNET" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$APPLICATION_CONFIG_DIR$/scratches" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$APPLICATION_CONFIG_DIR$/scratches/scratch.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -157,20 +134,42 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="scratch_3" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="QNET" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$APPLICATION_CONFIG_DIR$/scratches" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$APPLICATION_CONFIG_DIR$/scratches/scratch_3.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <list>
       <item itemvalue="Python.3dtest" />
-      <item itemvalue="Python.scratch" />
-      <item itemvalue="Python.scratch_1" />
       <item itemvalue="Python.Path" />
+      <item itemvalue="Python.scratch_1" />
       <item itemvalue="Python.scratch_2" />
+      <item itemvalue="Python.scratch_3" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.scratch_3" />
         <item itemvalue="Python.scratch_2" />
         <item itemvalue="Python.3dtest" />
         <item itemvalue="Python.Path" />
         <item itemvalue="Python.scratch_1" />
-        <item itemvalue="Python.scratch" />
       </list>
     </recent_temporary>
   </component>
@@ -193,6 +192,10 @@
       <workItem from="1588896759290" duration="529000" />
       <workItem from="1589147724054" duration="10045000" />
       <workItem from="1589184731442" duration="6893000" />
+      <workItem from="1589256896096" duration="18069000" />
+      <workItem from="1589315401368" duration="10612000" />
+      <workItem from="1589334121756" duration="551000" />
+      <workItem from="1589334897222" duration="779000" />
     </task>
     <task id="LOCAL-00001" summary="First time committing from PyCharm.&#10;Including tester file for 3d visualisation tools I want to use in jupyter notebook and also including live_demo file for Deepesh">
       <created>1587466301996</created>
@@ -239,38 +242,38 @@
       <screen x="70" y="27" width="1850" height="1053" />
     </state>
     <state x="795" y="44" width="495" height="520" key="FileChooserDialogImpl/70.27.1850.1053@70.27.1850.1053" timestamp="1589149560123" />
-    <state width="1804" height="339" key="GridCell.Tab.0.bottom" timestamp="1589202353513">
+    <state width="1548" height="247" key="GridCell.Tab.0.bottom" timestamp="1589335575515">
       <screen x="70" y="27" width="1850" height="1053" />
     </state>
-    <state width="1804" height="339" key="GridCell.Tab.0.bottom/70.27.1850.1053@70.27.1850.1053" timestamp="1589202353513" />
-    <state width="1804" height="339" key="GridCell.Tab.0.center" timestamp="1589202353513">
+    <state width="1548" height="247" key="GridCell.Tab.0.bottom/70.27.1850.1053@70.27.1850.1053" timestamp="1589335575515" />
+    <state width="1548" height="247" key="GridCell.Tab.0.center" timestamp="1589335575515">
       <screen x="70" y="27" width="1850" height="1053" />
     </state>
-    <state width="1804" height="339" key="GridCell.Tab.0.center/70.27.1850.1053@70.27.1850.1053" timestamp="1589202353513" />
-    <state width="1804" height="339" key="GridCell.Tab.0.left" timestamp="1589202353512">
+    <state width="1548" height="247" key="GridCell.Tab.0.center/70.27.1850.1053@70.27.1850.1053" timestamp="1589335575515" />
+    <state width="1548" height="247" key="GridCell.Tab.0.left" timestamp="1589335575514">
       <screen x="70" y="27" width="1850" height="1053" />
     </state>
-    <state width="1804" height="339" key="GridCell.Tab.0.left/70.27.1850.1053@70.27.1850.1053" timestamp="1589202353512" />
-    <state width="1804" height="339" key="GridCell.Tab.0.right" timestamp="1589202353513">
+    <state width="1548" height="247" key="GridCell.Tab.0.left/70.27.1850.1053@70.27.1850.1053" timestamp="1589335575514" />
+    <state width="1548" height="247" key="GridCell.Tab.0.right" timestamp="1589335575515">
       <screen x="70" y="27" width="1850" height="1053" />
     </state>
-    <state width="1804" height="339" key="GridCell.Tab.0.right/70.27.1850.1053@70.27.1850.1053" timestamp="1589202353513" />
-    <state width="1804" height="339" key="GridCell.Tab.1.bottom" timestamp="1589202353514">
+    <state width="1548" height="247" key="GridCell.Tab.0.right/70.27.1850.1053@70.27.1850.1053" timestamp="1589335575515" />
+    <state width="1548" height="247" key="GridCell.Tab.1.bottom" timestamp="1589335577738">
       <screen x="70" y="27" width="1850" height="1053" />
     </state>
-    <state width="1804" height="339" key="GridCell.Tab.1.bottom/70.27.1850.1053@70.27.1850.1053" timestamp="1589202353514" />
-    <state width="1804" height="339" key="GridCell.Tab.1.center" timestamp="1589202353514">
+    <state width="1548" height="247" key="GridCell.Tab.1.bottom/70.27.1850.1053@70.27.1850.1053" timestamp="1589335577738" />
+    <state width="1548" height="247" key="GridCell.Tab.1.center" timestamp="1589335577737">
       <screen x="70" y="27" width="1850" height="1053" />
     </state>
-    <state width="1804" height="339" key="GridCell.Tab.1.center/70.27.1850.1053@70.27.1850.1053" timestamp="1589202353514" />
-    <state width="1804" height="339" key="GridCell.Tab.1.left" timestamp="1589202353513">
+    <state width="1548" height="247" key="GridCell.Tab.1.center/70.27.1850.1053@70.27.1850.1053" timestamp="1589335577737" />
+    <state width="1548" height="247" key="GridCell.Tab.1.left" timestamp="1589335577737">
       <screen x="70" y="27" width="1850" height="1053" />
     </state>
-    <state width="1804" height="339" key="GridCell.Tab.1.left/70.27.1850.1053@70.27.1850.1053" timestamp="1589202353513" />
-    <state width="1804" height="339" key="GridCell.Tab.1.right" timestamp="1589202353514">
+    <state width="1548" height="247" key="GridCell.Tab.1.left/70.27.1850.1053@70.27.1850.1053" timestamp="1589335577737" />
+    <state width="1548" height="247" key="GridCell.Tab.1.right" timestamp="1589335577738">
       <screen x="70" y="27" width="1850" height="1053" />
     </state>
-    <state width="1804" height="339" key="GridCell.Tab.1.right/70.27.1850.1053@70.27.1850.1053" timestamp="1589202353514" />
+    <state width="1548" height="247" key="GridCell.Tab.1.right/70.27.1850.1053@70.27.1850.1053" timestamp="1589335577738" />
     <state x="798" y="424" width="476" height="271" key="MultipleFileMergeDialog" timestamp="1587466393193">
       <screen x="70" y="27" width="1850" height="1053" />
     </state>
@@ -279,10 +282,10 @@
       <screen x="70" y="27" width="1850" height="1053" />
     </state>
     <state x="177" y="65" width="1548" height="874" key="SettingsEditor/70.27.1850.1053@70.27.1850.1053" timestamp="1589149808779" />
-    <state x="587" y="161" width="1074" height="792" key="Vcs.Push.Dialog.v2" timestamp="1587468975110">
+    <state x="587" y="161" width="1074" height="792" key="Vcs.Push.Dialog.v2" timestamp="1589203343160">
       <screen x="70" y="27" width="1850" height="1053" />
     </state>
-    <state x="587" y="161" width="1074" height="792" key="Vcs.Push.Dialog.v2/70.27.1850.1053@70.27.1850.1053" timestamp="1587468975110" />
+    <state x="587" y="161" width="1074" height="792" key="Vcs.Push.Dialog.v2/70.27.1850.1053@70.27.1850.1053" timestamp="1589203343160" />
     <state x="766" y="468" width="458" height="177" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1589148715934">
       <screen x="70" y="27" width="1850" height="1053" />
     </state>
@@ -299,10 +302,10 @@
       <screen x="70" y="27" width="1850" height="1053" />
     </state>
     <state x="319" y="454" width="417" height="206" key="git4idea.remote.GitConfigureRemotesDialog/70.27.1850.1053@70.27.1850.1053" timestamp="1589149126607" />
-    <state x="1109" y="299" width="672" height="678" key="search.everywhere.popup" timestamp="1587463880653">
+    <state x="1109" y="299" width="672" height="678" key="search.everywhere.popup" timestamp="1589273821940">
       <screen x="70" y="27" width="1850" height="1053" />
     </state>
-    <state x="1109" y="299" width="672" height="678" key="search.everywhere.popup/70.27.1850.1053@70.27.1850.1053" timestamp="1587463880653" />
+    <state x="1109" y="299" width="672" height="678" key="search.everywhere.popup/70.27.1850.1053@70.27.1850.1053" timestamp="1589273821940" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -314,15 +317,23 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$APPLICATION_CONFIG_DIR$/scratches/scratch_2.py</url>
-          <line>8</line>
-          <option name="timeStamp" value="7" />
+          <line>19</line>
+          <option name="timeStamp" value="10" />
         </line-breakpoint>
       </breakpoints>
+      <default-breakpoints>
+        <breakpoint type="python-exception">
+          <properties notifyOnTerminate="true" exception="BaseException">
+            <option name="notifyOnTerminate" value="true" />
+          </properties>
+        </breakpoint>
+      </default-breakpoints>
     </breakpoint-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/QNET$scratch.coverage" NAME="scratch Coverage Results" MODIFIED="1587603871063" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
-    <SUITE FILE_PATH="coverage/QNET$scratch_2.coverage" NAME="scratch_2 Coverage Results" MODIFIED="1589201622643" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
+    <SUITE FILE_PATH="coverage/QNET$scratch_2.coverage" NAME="scratch_2 Coverage Results" MODIFIED="1589277880630" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
+    <SUITE FILE_PATH="coverage/QNET$scratch_3.coverage" NAME="scratch_3 Coverage Results" MODIFIED="1589335575139" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
     <SUITE FILE_PATH="coverage/QNET$quick_test.coverage" NAME="quick_test Coverage Results" MODIFIED="1587463959744" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/QNET$scratch_1.coverage" NAME="scratch_1 Coverage Results" MODIFIED="1587607634581" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
     <SUITE FILE_PATH="coverage/QNET$3dtest.coverage" NAME="3dtest Coverage Results" MODIFIED="1589155024368" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />

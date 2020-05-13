@@ -13,9 +13,9 @@ import numpy as np
 class Path:
     
     def __init__(self, G, array):
-        
-        assert (G != None), "path.__init__ requires reference to the graph containing path"
-        assert(array != None), "path.__init__ recieved an empty array"
+
+        assert (isinstance(G, QNET.Qnet)), "path.__init__ requires reference to the graph containing the path"
+        assert (array != None), "path.__init__ received an empty array"
         
         self.G = G
         self.node_array = []
@@ -30,9 +30,7 @@ class Path:
         else:
             assert(False), "Path __init__ requires an array of strings or Qnodes"
             
-        # Assert path is valid
-
-        ## TODO: Not working
+        # Assert path is valid in G
         for i in range(len(self.node_array) - 1):
             if (self.node_array[i], self.node_array[i+1]) in G.edges():
                 pass
@@ -51,24 +49,39 @@ class Path:
     
     def __repr__(self):
         return(self.stringify())
-    
+
+    def is_valid(self):
+        """
+        Checks to see if the given path is valid for entanglement distribution.
+        :return: Boolean
+        """
+        has_ground = False
+        for node in self.node_array:
+            if isinstance(node, QNET.Ground) or isinstance(node, QNET.Satellite):
+                has_ground = True
+                break
+        return has_ground
+
     def cost(self, costType):
         """
         Calculate the cost of the path for a given cost type
-
-        Parameters
-        ----------
-        costType : str
-            Units of the cost
-            Choose between {'loss', 'fid'}. The default is 'loss'.
-
-        Returns
-        -------
-        int
-
+        :param str costType:
+        :return: cost
         """
+
+        assert(costType in ['p', 'e', 'dp', 'de']), "Usage: costType in {'p', 'e', 'dp', 'de'}"
+
         cost = 0
         pathLen = len(self.node_array)
+
+        # Determine if cost is linear or log:
+        is_linear = False
+        lin_costs = ('e', 'p', 'px', 'py', 'pz', 'fid')
+        if costType in lin_costs:
+            is_linear = True
+            costType = "d" + costType
+
+        # Sum all edge costs of the path
         i = 0
         while (i < pathLen - 1):
             cur = self.node_array[i]
@@ -77,21 +90,31 @@ class Path:
             
             assert edgeData != None, "Path does not exist in graph"
             assert edgeData[costType] != None, f"costType \'{costType}\' does not exist between qnodes \'{cur.name}\' and \'{nxt.name}\'"
-            
+
+            # This might not be necessary
+            #if edgeData[costType] == np.inf:
+            #    return np.inf
+            #else:
+
             cost += edgeData[costType]
-            
-            # Add additional costs due to node type
-            if (type(cur) == type(QNET.Swapper())):
-                cost += cur.loss
-            
             i += 1
-            
-        # Convert cost to specified costType
-        if costType == 'fid':
-            return QNET.L2F(cost)
-        else:
-            return cost
-    
+
+        # Sum all node costs of the path
+        for node in self.node_array:
+
+            # Might not be necessary
+            # if node.costs[costType] == 'NaN':
+            #    return 'NaN'
+            #else:
+            cost += node.costs[costType]
+
+        # If costType is linear, convert back to linear form
+        if is_linear:
+            cost = QNET.convert(cost, 'linear')
+
+        return cost
+
+
     # TODO Test this
     def subgraph(self):
         """
