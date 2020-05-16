@@ -35,7 +35,9 @@ import QNET
 
 def make_cost_vector(e = 1, p = 1, px = 0, py = 0, pz = 0, **kwargs):
     """
-    Makes a cost vector for a qnode or qchan
+    Makes a cost vector for a qnode or qchan given cost parameters.
+    When p = 1 and (px, py, pz) != 0, p = 1 - dx, dy, dz
+    else when p != 1, pz = 1 - p
 
     :param float e: Proportion of photons that pass through the channel
     :param float p: Proportion of surviving photons that haven't changed state
@@ -68,9 +70,15 @@ def make_cost_vector(e = 1, p = 1, px = 0, py = 0, pz = 0, **kwargs):
     for attr in kwargs:
         cost_vector[attr] = kwargs[attr]
 
-    # Set p and log p
-    cost_vector['p'] = 1 - cost_vector['px'] - cost_vector['py'] - cost_vector['pz']
-    cost_vector['dp'] = convert(cost_vector['p'], 'log')
+    # If p == 1 but there are non zero costs in (px, py, pz), calculate new values for p and log p.
+    if p == 1:
+        cost_vector['p'] = 1 - px - py - pz
+        cost_vector['dp'] = convert(cost_vector['p'], 'log')
+
+    # Else assume there is only dephasing along one axis:
+    else:
+        cost_vector['pz'] = 1 - p
+        cost_vector['dpz'] = convert(cost_vector['pz'], 'log')
 
     return cost_vector
 
@@ -99,7 +107,7 @@ def convert(x, typ = None):
     """
 
     valid_types = ['log', 'linear']
-    assert(typ in valid_types), "Invalid type"
+    assert(typ in valid_types), "Invalid type, please choose one from {\'log\', \'linear\'}"
 
     if typ == 'log':
         assert(0 <= x and x <= 1)
@@ -115,6 +123,10 @@ def convert(x, typ = None):
 
 def shortest_path_length(Q, source, target, costType):
     """
+    Get the shortest path length in a Qnet for a given costType.
+    Considers edge weights and node weights
+    Considers only valid paths.
+
     :param Q: Qnet Graph
     :param str source: Name of source node
     :param str target: Name of target node
@@ -122,8 +134,7 @@ def shortest_path_length(Q, source, target, costType):
     :return: float length of shortest path in units of costType
     """
 
-    # Future proof:
-    # Make it so that this function only considers valid paths in Q!
+    # TODO: Make it so that we only consider valid paths in QNET
 
     def get_weight_function(costType):
         def weight(u, v, d):

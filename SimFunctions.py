@@ -30,11 +30,9 @@ def getTimeArr(tMax, dt):
     """
     return np.arange(0, tMax, dt)
 
-
-# TODO: Make get Loss Array
 def getCostArr(path, costType, tMax, dt):
     """
-    Calculates an array of costs for a path for a given timeframe
+    Calculates an array of costs for a path over a given timeframe
 
     Parameters
     ----------
@@ -63,7 +61,7 @@ def getCostArr(path, costType, tMax, dt):
     return costArr
     
 
-def getLossArrays(G, sourceName, targetName, costType, tMax, dt):
+def getCostArrays(G, sourceName, targetName, costType, tMax, dt):
     """
     Calculates an array of costs for all simple paths for a given timeframe
 
@@ -124,7 +122,7 @@ def getLossArrays(G, sourceName, targetName, costType, tMax, dt):
     
     return pathDict
 
-def getOptimalLossArray(G, sourceName, targetName, costType, tMax, dt, with_purification = True):
+def getOptimalCostArray(G, sourceName, targetName, costType, tMax, dt, with_purification = True):
     """
     Calculate the costs of the lowest cost path from "source" to "target" over time
 
@@ -151,13 +149,11 @@ def getOptimalLossArray(G, sourceName, targetName, costType, tMax, dt, with_puri
     """
     
     C = copy.deepcopy(G)
-    
-    # get source and target from names
-    source = C.getNode(sourceName)
-    target = C.getNode(targetName)
-    
+
+    assert costType in ['e', 'p', 'de', 'dp'], "Please choose a supported cost type from {'e', 'p', 'de', 'dp}"
+
     # Initialize arrays
-    lossArr = []
+    costArr = []
     sizeArr = tMax // dt + 1
     
     # Get optimal path cost and append it to costArr
@@ -165,7 +161,7 @@ def getOptimalLossArray(G, sourceName, targetName, costType, tMax, dt, with_puri
     while i < sizeArr:
         
         # Get classically shortest path cost
-        loss = nx.dijkstra_path_length(C, source, target, QNET.weight)
+        cost = QNET.shortest_path_length(C, sourceName, targetName, costType)
         
         # Get purified cost
         pur_loss = C.purify(sourceName, targetName)

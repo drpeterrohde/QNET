@@ -128,6 +128,19 @@ class Satellite(Qnode):
         return np.sqrt((x - nx)**2 + (y - ny)**2 + (z - nz)**2)
     
     def airCost(self, node):
+        """
+        :param Qnode() node: The target node for the satellite communication
+        :return list: [e, p] -- [Transmission probability, phasing probability]
+        """
+
+        # TODO:
+        """
+        We want the aircost to be able to return both the efficiency and p,
+        but this requires more advanced understanding of how e and p change with
+        effective density.
+        
+        """
+
         alt = self.coords[2]
         
         # Calculate ground distance from source to target:
@@ -154,12 +167,39 @@ class Satellite(Qnode):
             R = 287.058 # Specific gas constant of air
             return P / (R * T)
             
-        # Perform numerical integreation to get effective density (?)
-        result = scipy.integrate.quad(rho, 0, dist, args = (theta))[0]
-        
-        # Attenuation constant:
-        K = 0.001
-        return result * K
+        # Perform numerical integration to get effective density (?)
+        d = scipy.integrate.quad(rho, 0, dist, args = (theta))[0]
+
+        # TODO:
+        """
+        Given effective distance, write functions for transmission probability
+        and phasing probability
+        """
+
+        def transmission_probability(d):
+            """
+            Calculate proportion of photons that survive the transmission given effective density
+            :param float d: Effective density
+            :return float: "p" Probability of survival
+            """
+
+            # Attenuation coefficient
+            K = 0.01
+            return QNET.convert(d * K, 'linear')
+
+        def phasing_probability(d):
+            """
+            Calculate proportion of surviving photons that undergo no phase transition given effective density
+            :param float d: Effective density
+            :return float: "e" probability of no phase flip.
+            """
+
+            # Attenuation coefficient
+            K = 0.01
+            return QNET.convert(d * K, 'linear')
+
+        results = [transmission_probability(d), phasing_probability(d)]
+        return results
      
 class Swapper(Qnode):   
     # prob is probability of succesful swapping between nodes

@@ -28,14 +28,10 @@ range = 100
 
 # STATIC CHANNEL COSTS
 # Loss of 0.05 corresponds to ~95% success probability
-lossAG1 = 0.05
-lossG1T = 0.05
-lossTG2 = 0.05
-lossG2B = 0.05
-
-# MAX TIME AND RESOLUTION
-tMax = 10
-dt = 0.1
+A_G1_pz = 0.05
+G1_T_pz = 0.05
+T_G2_pz = 0.05
+G2_B_pz = 0.05
 
 ####### INITIALIZATIONS #######
 
@@ -52,17 +48,12 @@ nbunch = [{'name':'A', 'coords': posA},
 
 X.add_qnodes_from(nbunch)
 
-# INITIALIZE CHANNELS
-
-lossSA = (X.getNode('S')).airCost(X.getNode('A'))
-lossSB = (X.getNode('S')).airCost(X.getNode('B'))
-
-ebunch = [{'edge': ('A', 'G1'), 'loss':lossAG1},
-          {'edge': ('G1', 'T'), 'loss':lossG1T},
-          {'edge': ('T', 'G2'), 'loss':lossTG2},
-          {'edge': ('G2', 'B'), 'loss':lossG2B},
-          {'edge': ('S', 'A'), 'loss':lossSA},
-          {'edge': ('S', 'B'), 'loss':lossSB} 
+ebunch = [{'edge': ('A', 'G1'), 'pz': A_G1_pz},
+          {'edge': ('G1', 'T'), 'pz': G1_T_pz},
+          {'edge': ('T', 'G2'), 'pz': T_G2_pz},
+          {'edge': ('G2', 'B'), 'pz': G2_B_pz},
+          {'edge': ('S', 'A')},
+          {'edge': ('S', 'B')}
           ]
 
 X.add_qchans_from(ebunch)

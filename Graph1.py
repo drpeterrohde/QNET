@@ -20,9 +20,9 @@ posS = [0,0,100]
 vsat = [20, 0]
 range = 100
 
-# STATIC CHANNEL LOSSES
-lossAG = 0.15
-lossGB = 0.15
+# STATIC CHANNEL COSTS
+AG_pz = 0.15
+GB_pz = 0.15
 
 ####### INITIALIZATIONS #######
 
@@ -37,14 +37,10 @@ Qnodes = [{'name': 'A', 'coords': posA},
 
 X.add_qnodes_from(Qnodes)
 
-# Initial satellite losses
-lossAS = (X.getNode('S')).airCost(X.getNode('A'))
-lossBS = (X.getNode('S')).airCost(X.getNode('B'))
-
-Qchans = [{'edge':('A','G'),'loss':lossAG},
-          {'edge':('G','B'),'loss':lossGB},
-          {'edge':('A','S'),'loss':lossAS},
-          {'edge':('B','S'),'loss':lossBS},
+Qchans = [{'edge':('A','G'),'pz':AG_pz},
+          {'edge':('G','B'),'pz':GB_pz},
+          {'edge':('A','S')},
+          {'edge':('B','S')},
           ]
 
 X.add_qchans_from(Qchans)

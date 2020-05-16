@@ -84,6 +84,9 @@ class Qnet(nx.Graph):
             
     def add_qchan(self, edge = None, e = 1, p = 1, px = 0, py = 0, pz = 0, **kwargs):
         """
+        Add a Qchan to the graph. If either of the node types are Satellites, the airCosts
+        will be automatically calculated from current positions and added to the cost array.
+
         :param list edge: Array-like object of two qnodes to be connected
         :param float e: Proportion of photons that pass through the channel
         :param float p: Proportion of surviving photons that haven't changed state
@@ -101,7 +104,13 @@ class Qnet(nx.Graph):
         u = self.getNode(edge[0])
         v = self.getNode(edge[1])
 
-        cost_vector = QNET.make_cost_vector(p, e, px, py, pz, **kwargs)
+        # If either of the nodes are satellites, get air costs
+        if isinstance(u, QNET.Satellite):
+            e, p = u.airCost(v)
+        elif isinstance(v, QNET.Satellite):
+            e, p = v.airCost(u)
+
+        cost_vector = QNET.make_cost_vector(e, p, px, py, pz, **kwargs)
         self.add_edge(u, v, **cost_vector)
 
             
@@ -196,9 +205,13 @@ class Qnet(nx.Graph):
                         newCost = edge[0].airCost(edge[1])
                     else:
                         newCost = edge[1].airCost(edge[0])
-                    
+
+                    # Unpack newCost
+                    new_e = newCost[0]
+                    new_p = newCost[1]
+
                     # Update edge
-                    self.add_edge(edge[0], edge[1], loss = newCost)
+                    self.add_edge(edge[0], edge[1], e = new_e, p = new_p)
 
     def purify(self, sourceName, targetName):
         """
