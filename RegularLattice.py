@@ -12,15 +12,43 @@ import QNET
 import numpy as np
 import matplotlib.pyplot as plt
 
+def RegLat(x, y, xspacing, yspacing = [0,0,0], eVal = 1, pxVal = 0, pyVal = 0, pzVal = 0):
+    '''
+    Constructs a 2D Regular Lattice with end Qnodes A and B, and alternating Swapper and Ground nodes in the middle.
+    
 
-# Returns a 2D Regular Lattice with end Qnodes A and B, and alternating Swapper and Ground nodes in the middle
-# Argument x (integer): Total number of nodes in the chain in x-direction, including end nodes A and B
-# Argument y (integer): Total number of nodes in the chain in y-direction, including end nodes A and B
-# Argument spacing (array): Distance between two consecutive nodes
-# Argument loss (float): Loss between two consecutive nodes
-def RegLat(x, y, xspacing, yspacing, loss):
+    Parameters
+    ----------
+    x : int
+        Number of columns in the regular lattice.
+    y : int
+        Number of rows in the regular lattice.
+    xspacing : 3x1 Array of float 
+        Distance between two consecutive columns in 2D regular lattice in [x,0,0] format. 
+    yspacing : 3x1 Array of float
+        Distance between two consecutive rows in 2D regular lattice in [0,y,0] format. The default is [0,0,0].
+    eVal : float
+        Efficiency of a single channel in the regular lattice. The default is 1.
+    pxVal : float
+        Probability of state not undergoing X-flip in the regular lattice. The default is 0.
+    pyVal : float
+        Probability of state not undergoing Y-flip in the regular lattice. The default is 0.
+    pzVal : float
+        Probability of state not undergoing Z-flip in the regular lattice. The default is 0.
+
+    Returns
+    -------
+    Q : QNET Graph
+        A y*x 2D regular lattice.
+
+    '''
+        
     assert(x>0)
     assert(y>0)
+    
+    if yspacing==[0,0,0]:
+        yspacing[1] = xspacing[0] 
+
     
     Q = QNET.Qnet()
     
@@ -72,7 +100,7 @@ def RegLat(x, y, xspacing, yspacing, loss):
         previousNode = list(Q.nodes)[i*y]
         for j in range(y-1):
             currentNode = list(Q.nodes)[j+1+(i*y)]
-            ChannelList.append({'edge': (previousNode.name, currentNode.name), 'loss': loss})
+            ChannelList.append({'edge': (previousNode.name, currentNode.name), 'e': eVal, 'p': pVal, 'px': pxVal, 'py': pyVal, 'pz': pzVal})
             previousNode = currentNode
             
     # Constructing the horizontal edges in the Regular Lattice    
@@ -80,7 +108,7 @@ def RegLat(x, y, xspacing, yspacing, loss):
         previousNode = list(Q.nodes)[j]
         for i in range(x-1):
             currentNode = list(Q.nodes)[j+(i+1)*y]
-            ChannelList.append({'edge': (previousNode.name, currentNode.name), 'loss': loss})
+            ChannelList.append({'edge': (previousNode.name, currentNode.name), 'e': eVal, 'p': pVal, 'px': pxVal, 'py': pyVal, 'pz': pzVal})
             previousNode = currentNode
              
             
