@@ -12,33 +12,35 @@ import numpy as np
 import copy
 import warnings
 
-typeDict = {'Ground': QNET.Ground, 
-     'Satellite': QNET.Satellite, 
-     'Swapper': QNET.Swapper,
-     'PBS': QNET.PBS,
-     'CNOT': QNET.CNOT}
+typeDict = {'Ground': QNET.Ground,
+            'Satellite': QNET.Satellite,
+            'Swapper': QNET.Swapper,
+            'PBS': QNET.PBS,
+            'CNOT': QNET.CNOT}
+
 
 class Qnet(nx.Graph):
-    
+
     def __init__(self, incoming_graph_data=None, **attr):
         super().__init__(incoming_graph_data, **attr)
-        
+
     def __str__(self):
+
         qnodes = ""
         for node in self.nodes():
-            qnodes += (node.name)
-            qnodes += ', '
-            
+            qnodes += node.name + " -- Costs: " + str(node.costs)
+            qnodes += "\n"
+
         qchans = ""
         for chan in self.edges():
             edge_data = self.get_edge_data(chan[0], chan[1])
             qchans += str(chan[0].name + " <--> " + chan[1].name + " -- Costs: " + str(edge_data))
             qchans += "\n"
-            
-        return(f"Qnodes:\n{qnodes}\n\nQchans:\n{qchans}")
-    
+
+        return (f"Qnodes:\n{qnodes}\nQchans:\n{qchans}")
+
     ### QNET functions ###
-    def add_qnode(self, qnode_type = None, **kwargs):
+    def add_qnode(self, qnode_type=None, **kwargs):
         """
         Initialize a qnode of some type and add it to the grah
 
@@ -54,7 +56,7 @@ class Qnet(nx.Graph):
         # If type is specified, initialize qnode of that type
         if qnode_type != None:
             # Check if qnode_type is valid
-            assert(qnode_type in typeDict), f"Unsupported qnode type: \'{qnode_type}\'"
+            assert (qnode_type in typeDict), f"Unsupported qnode type: \'{qnode_type}\'"
             newNode = typeDict[qnode_type](**kwargs)
 
             # TODO: Add additional cost vector dict?
@@ -64,8 +66,7 @@ class Qnet(nx.Graph):
         else:
             newNode = QNET.Qnode(**kwargs)
             self.add_node(newNode)
-            
-    
+
     # Convert array of tuples into Qnode objects and add to graph
     # First arguement is class. If class is unspecified, node will be regular qnode
     def add_qnodes_from(self, nbunch):
@@ -81,8 +82,8 @@ class Qnet(nx.Graph):
         """
         for data in nbunch:
             self.add_qnode(**data)
-            
-    def add_qchan(self, edge = None, e = 1, p = 1, px = 0, py = 0, pz = 0, **kwargs):
+
+    def add_qchan(self, edge=None, e=1, p=1, px=0, py=0, pz=0, **kwargs):
         """
         Add a Qchan to the graph. If either of the node types are Satellites, the airCosts
         will be automatically calculated from current positions and added to the cost array.
@@ -100,7 +101,7 @@ class Qnet(nx.Graph):
         # Assert edge is valid
         assert (edge != None), "\'edge\' must be an array-like object of two qnodes"
         assert (len(edge) == 2), "\'edge\' must be an array-like object of two qnodes"
-        
+
         u = self.getNode(edge[0])
         v = self.getNode(edge[1])
 
@@ -113,7 +114,6 @@ class Qnet(nx.Graph):
         cost_vector = QNET.make_cost_vector(e, p, px, py, pz, **kwargs)
         self.add_edge(u, v, **cost_vector)
 
-            
     def add_qchans_from(self, cbunch):
         """
         Adds a list of channels connecting Qnodes
@@ -128,11 +128,10 @@ class Qnet(nx.Graph):
         None.
 
         """
-        
+
         for edge in cbunch:
             self.add_qchan(**edge)
-        
-    
+
     # Might be outmoded by for edge in G.edges() print edge
     def print_qchans(self):
         """
@@ -147,8 +146,7 @@ class Qnet(nx.Graph):
             # get costs:
             edge_data = self.get_edge_data(chan[0], chan[1])
             print(chan[0].name + " <--> " + chan[1].name + " -- Costs: " + str(edge_data))
-            
-    
+
     # Given a nodeName and a graph, returns node
     def getNode(self, nodeName):
         """
@@ -170,7 +168,7 @@ class Qnet(nx.Graph):
                 return node
         # else
         assert False, f"Node \"{nodeName}\" not found in graph."
-    
+
     def update(self, dt):
         """
         Updates all time dependent elements in the Qnet
@@ -185,13 +183,14 @@ class Qnet(nx.Graph):
         None.
 
         """
-        
+        assert (dt is not None)
+
         # Update satellite positions
-        for node in self.nodes:            
+        for node in self.nodes:
             if isinstance(node, QNET.Satellite):
                 # Update satellite position:
                 node.posUpdate(dt)
-        
+
         # Update satellite channels
         for node in self.nodes:
             if isinstance(node, QNET.Satellite):
@@ -199,19 +198,23 @@ class Qnet(nx.Graph):
                 edges = self.edges(node)
                 # Update channels:
                 for edge in edges:
-                    
-                    # Get new air cost
                     if isinstance(edge[0], QNET.Satellite):
-                        newCost = edge[0].airCost(edge[1])
+                        s = edge[0]
+                        n = edge[1]
                     else:
-                        newCost = edge[1].airCost(edge[0])
+                        n = edge[0]
+                        s = edge[1]
+
+                    # newCost = [e, p]
+                    newCost = s.airCost(n)
 
                     # Unpack newCost
                     new_e = newCost[0]
                     new_p = newCost[1]
 
                     # Update edge
-                    self.add_edge(edge[0], edge[1], e = new_e, p = new_p)
+                    # TODO: add edge isn't updating cost vector.
+                    self.add_edge(s, n, e=new_e, p=new_p)
 
     def purify(self, sourceName, targetName):
         """
@@ -229,9 +232,9 @@ class Qnet(nx.Graph):
             Purified cost of the network from source to target
 
         """
-        
+
         def fidTransform(F1, F2):
-            return (F1 * F2) / (F1 * F2 + (1 - F1) * (1 - F2) )
+            return (F1 * F2) / (F1 * F2 + (1 - F1) * (1 - F2))
 
         # Get paths for Graph
         u = self.getNode(sourceName)
@@ -249,13 +252,14 @@ class Qnet(nx.Graph):
             else:
                 pass
 
-        assert(len(p_arr) != 0), f"No path exists from {sourceName} to {targetName}"
+        assert (len(p_arr) != 0), f"No path exists from {sourceName} to {targetName}"
 
         # Initialize purified fidelity as the max fidelity value
         pure_cost = max(p_arr)
         p_arr.remove(pure_cost)
-        
+
         # Purify fidelities together
+        # TODO: Depreciate this code
         while (len(p_arr) != 0):
             pmax = max(p_arr)
             if pmax > 0.5:
@@ -265,23 +269,49 @@ class Qnet(nx.Graph):
             p_arr.remove(pmax)
 
         return pure_cost
-    
-    ### IN PROGRESS ###
-    def low_purify(self, path1, path2, return_as = 'loss'):
-        
+
+    # TODO Test this:
+    def bi_purify(self, path1, path2, costType):
+        """
+        Returns the purified path cost of two paths in the graph
+        :param Union[str, Path] path1:
+        :param Union[str, Path] path2:
+        :param str costType: Any of {'p', 'dp'}
+        :return float: Purified cost
+        """
+        assert (costType in ['p', 'dp']), "Usage: CostType in (\'p\', \'dp\')."
+
         # If the paths are not QNET paths, make them
         if not isinstance(path1, QNET.Path):
-            path1 = QNET.Path(G = self, array = path1)
+            path1 = QNET.Path(G=self, array=path1)
         if not isinstance(path2, QNET.Path):
-            path2 = QNET.Path(G = self, array = path2)
-        
+            path2 = QNET.Path(G=self, array=path2)
+
         # Check that both paths start and finish in the same place
-        assert(path1.head() == path2.head()), "Paths do not start in the same place."
-        assert(path1.tail() == path2.tail()), "Paths do not end in the same place."
-        
+        assert (path1.head() == path2.head()), "Paths do not start at the same node."
+        assert (path1.tail() == path2.tail()), "Paths do not end at the same node."
+
+        # Assert that no nodes except for head and tail are coincident in (path1, path2)
+        weakest_link = min(len(path1.node_array), len(path2.node_array))
+        for i in range(weakest_link):
+            if (i == 0 or i == weakest_link - 1):
+                pass
+            else:
+                if path1.node_array[i] == path2.node_array[i]:
+                    assert False, f"Paths have coincident nodes in body. Cannot purify."
+
         def fidTransform(F1, F2):
-            return (F1 * F2) / (F1 * F2 + (1 - F1) * (1 - F2) )
-        
-        # Todo: Calc and return
-        
-        
+            return (F1 * F2) / (F1 * F2 + (1 - F1) * (1 - F2))
+
+        p1 = path1.cost('p')
+        p2 = path2.cost('p')
+
+        if p1 >= 0.5 and p2 >= 0.5:
+            pur_cost = fidTransform(p1, p2)
+        else:
+            pur_cost = max(p1, p2)
+
+        if costType == 'dp':
+            pur_cost = QNET.convert(pur_cost, 'log')
+
+        return pur_cost

@@ -12,7 +12,7 @@ import QNET
 import numpy as np
 import matplotlib.pyplot as plt
 
-def RegLat(x, y, xspacing, yspacing = [0,0,0], eVal = 1, pxVal = 0, pyVal = 0, pzVal = 0):
+def RegLat(x, y, xspacing, yspacing = [0,0,0], eVal = 1, pVal = 1, pxVal = 0, pyVal = 0, pzVal = 0):
     '''
     Constructs a 2D Regular Lattice with end Qnodes A and B, and alternating Swapper and Ground nodes in the middle.
     

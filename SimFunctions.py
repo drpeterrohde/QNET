@@ -11,6 +11,8 @@ import QNET
 import copy
 import numpy as np
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import art3d
+
 
 def getTimeArr(tMax, dt):
     """
@@ -32,7 +34,7 @@ def getTimeArr(tMax, dt):
 
 def getCostArr(path, costType, tMax, dt):
     """
-    Calculates an array of costs for a path over a given timeframe
+    Calculates an array of costs for a path over a given time frame
 
     Parameters
     ----------
@@ -63,7 +65,7 @@ def getCostArr(path, costType, tMax, dt):
 
 def getCostArrays(G, sourceName, targetName, costType, tMax, dt):
     """
-    Calculates an array of costs for all simple paths for a given timeframe
+    Calculates an array of costs for all simple paths over a given time frame
 
     Parameters
     ----------
@@ -124,7 +126,9 @@ def getCostArrays(G, sourceName, targetName, costType, tMax, dt):
 
 def getOptimalCostArray(G, sourceName, targetName, costType, tMax, dt, with_purification = True):
     """
-    Calculate the costs of the lowest cost path from "source" to "target" over time
+    Calculate the costs of the lowest cost path from "source" to "target" over time.
+    The user also has the option to consider whether or not the optimal cost comparison includes
+    mutli-path purification.
 
     Parameters
     ----------
@@ -147,10 +151,9 @@ def getOptimalCostArray(G, sourceName, targetName, costType, tMax, dt, with_puri
     optLossArr : array
 
     """
-    
     C = copy.deepcopy(G)
 
-    assert costType in ['e', 'p', 'de', 'dp'], "Please choose a supported cost type from {'e', 'p', 'de', 'dp}"
+    assert costType in ['e', 'p'], "Please choose a supported cost type from {'e', 'p'}"
 
     # Initialize arrays
     costArr = []
@@ -164,26 +167,27 @@ def getOptimalCostArray(G, sourceName, targetName, costType, tMax, dt, with_puri
         cost = QNET.shortest_path_length(C, sourceName, targetName, costType)
         
         # Get purified cost
-        pur_loss = C.purify(sourceName, targetName)
+        pur_cost = C.purify(sourceName, targetName)
         
         # Compare costs, add the lower of the two:
         if with_purification:
-            if loss < pur_loss:
-                lossArr.append(loss)
+            if cost < pur_cost:
+                costArr.append(cost)
             else:
-                lossArr.append(pur_loss)
+                costArr.append(pur_cost)
         else:
-            lossArr.append(loss)
+            costArr.append(cost)
         
         # Update satellites
         C.update(dt)
         i += 1
     
-    return lossArr
+    return costArr
 
-def getPurifiedArray(G, sourceName, targetName, costType, tMax, dt):
+def getPurifiedArray(G, sourceName, targetName, tMax, dt):
     """
-    Calculate the costs of an entanglement purification from "source" to "target" over time
+    Calculate the costs of an entanglement purified channel from "source" to "target" 
+    over time
 
     Parameters
     ----------
@@ -206,40 +210,52 @@ def getPurifiedArray(G, sourceName, targetName, costType, tMax, dt):
     purLossArr : array
 
     """
-    
     C = copy.deepcopy(G)
     
     # Initialize arrays
-    lossArr = []
+    costArr = []
     sizeArr = tMax // dt + 1
     
     # Get purified path cost and append it to costArr
     i = 0
     while i < sizeArr:
-        
-        # Get purified fidelity from purify
-        loss = C.purify(sourceName, targetName)
-        
-        # Convert to loss
-        lossArr.append(loss)
+        pur_cost = C.purify(sourceName, targetName)
+        costArr.append(pur_cost)
         
         # Update satellites
         C.update(dt)
         i += 1
     
-    return lossArr
+    return costArr
 
-def posPlot(u, v, tMax, dt):
+def posPlot(Q, u, v, tMax, dt):
     """
     Plot the distance between two nodes over time
+    :param Q: QNet Graph
+    :param u: Name of Qnode
+    :param v: Name of Qnode
+    :param tMax: Maximum time
+    :param dt: Size of timestep
+    :return: None
     """
+    C = copy.deepcopy(Q)
+
+    u = C.getNode(u)
+    v = C.getNode(v)
+
     posArr = []
     sizeArr = tMax // dt + 1
-    
+
     i = 0
     while i < sizeArr:
-        dist = QNET.distance(u, v)
+        if isinstance(u, QNET.Satellite):
+            dist = u.distance(v)
+        elif isinstance(v, QNET.Satellite):
+            dist = v.distance(u)
+        else:
+            assert(False)
         posArr.append(dist)
+        C.update(dt)
         i += 1
     
     timeArr = np.arange(0, tMax, dt)
@@ -249,9 +265,16 @@ def posPlot(u, v, tMax, dt):
     plt.title(f"Distance between {u.name} and {v.name} over {tMax} time units")
     plt.show()    
 
-from mpl_toolkits.mplot3d import art3d
 
-def Qnet3dPlot(Q):
+def plot_2d(Q):
+    pos_dict = {}
+    for node in Q.nodes():
+        pos_dict[node] = [node.coords[0], node.coords[1]]
+    nx.draw_networkx(Q, pos_dict)
+    plt.show()
+
+
+def plot_3d(Q):
     """
     Produces a static 3d plot of a Qnet graph
 

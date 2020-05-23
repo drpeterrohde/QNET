@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Mon Apr  6 10:32:19 2020
+Created on Mon Apr 6 10:32:19 2020
 
 Static tripartite graph
 
@@ -14,24 +14,19 @@ import QNET
 X = QNET.Qnet()
 
 # STATIC CHANNEL COSTS
-# Loss of 0.05 corresponds to ~95% success probability
-# 0.20 ~ 80% success probability
-# 0.69 ~ 50% success probability
+AG1 = 0.05
+AG2 = 0.10
+AG3 = 0.20
+AG4 = 0.25
+AG5 = 0.40
 
-# Any path below 50% success probability should __NOT__ be purified
+BG1 = 0.05
+BG2 = 0.10
+BG3 = 0.20
+BG4 = 0.25
+BG5 = 0.40
 
-lossAG1 = 0.05
-lossAG2 = 0.10
-lossAG3 = 0.20
-lossAG4 = 0.25
-lossAG5 = 0.40
-
-lossBG1 = 0.05
-lossBG2 = 0.10
-lossBG3 = 0.20
-lossBG4 = 0.25
-lossBG5 = 0.40
-
+# INITIALIZE NODES AND EDGES
 nbunch = [{'name':'A'},
           {'name':'B'},
           {'name':'G1', 'qnode_type': 'Ground'},
@@ -41,16 +36,16 @@ nbunch = [{'name':'A'},
           {'name':'G5', 'qnode_type': 'Ground'},
           ]
 
-ebunch = [{'edge': ('A', 'G1'), 'loss':lossAG1},
-          {'edge': ('A', 'G2'), 'loss':lossAG2},
-          {'edge': ('A', 'G3'), 'loss':lossAG3},
-          {'edge': ('A', 'G4'), 'loss':lossAG4},
-          {'edge': ('A', 'G5'),  'loss':lossAG5},
-          {'edge': ('B', 'G1'), 'loss':lossBG1},
-          {'edge': ('B', 'G2'), 'loss':lossBG2},
-          {'edge': ('B', 'G3'), 'loss':lossBG3},
-          {'edge': ('B', 'G4'), 'loss':lossBG4},
-          {'edge': ('B', 'G5'),  'loss':lossBG5},
+ebunch = [{'edge': ('A', 'G1'), 'pz': AG1},
+          {'edge': ('A', 'G2'), 'pz': AG2},
+          {'edge': ('A', 'G3'), 'pz': AG3},
+          {'edge': ('A', 'G4'), 'pz': AG4},
+          {'edge': ('A', 'G5'),  'pz': AG5},
+          {'edge': ('B', 'G1'), 'pz': BG1},
+          {'edge': ('B', 'G2'), 'pz': BG2},
+          {'edge': ('B', 'G3'), 'pz': BG3},
+          {'edge': ('B', 'G4'), 'pz': BG4},
+          {'edge': ('B', 'G5'),  'pz': BG5},
           ]
 
 X.add_qnodes_from(nbunch)

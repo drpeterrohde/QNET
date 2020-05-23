@@ -74,7 +74,9 @@ def iterations(Q, nTurns = 100, nSteps = 11, toCompute = "pathProbability"):
                 
                 try:
                     # Returns the efficiency of the shortest path in the percolated graph
-                    lossValue = nx.shortest_path_length(G, list(G.nodes)[0], list(G.nodes)[-1], weight='e', method='dijkstra')
+                    # HUDSON'S TEST:
+                    lossValue = QNET.shortest_path_length(G, list(G.nodes)[0], list(G.nodes)[-1], 'e')
+                    # lossValue = nx.shortest_path_length(G, list(G.nodes)[0], list(G.nodes)[-1], weight='e', method='dijkstra')
                 except:
                     pass
                 
@@ -91,8 +93,8 @@ def iterations(Q, nTurns = 100, nSteps = 11, toCompute = "pathProbability"):
                 
                 try:
                     # Returns the fidelity of the shortest path in the percolated graph
-                    fidValue = nx.shortest_path_length(G, list(G.nodes)[0], list(G.nodes)[-1], weight='pz', method='dijkstra')
-                    #fidValue = QNET.shortest_path_length(G, list(G.nodes)[0], list(G.nodes)[-1], costType = 'p')
+                    # fidValue = nx.shortest_path_length(G, list(G.nodes)[0], list(G.nodes)[-1], weight='pz', method='dijkstra')
+                    fidValue = QNET.shortest_path_length(G, list(G.nodes)[0], list(G.nodes)[-1], costType = 'p')
                 except:
                     pass
                 

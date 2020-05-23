@@ -78,4 +78,4 @@ def PercolationPlots(x,y, e, pz):
     plt.legend(loc='best')
     plt.show()
     
-PercolationPlots(3,3, e= 0.4, pz = 0.8)  
+PercolationPlots(3, 3, e= 1, pz = 0.51)

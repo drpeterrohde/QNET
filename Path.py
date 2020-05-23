@@ -69,17 +69,17 @@ class Path:
         :return: cost
         """
 
-        assert(costType in ['p', 'e', 'dp', 'de']), "Usage: costType in {'p', 'e', 'dp', 'de'}"
+        # Convert cost to additive form
+        assert(costType in ['p', 'e']), "Usage: costType in {'p', 'e'}"
+        if costType == 'p':
+            costType = 'd'
+        elif costType == 'e':
+            costType = 'log_e'
+        else:
+            assert(False), 'A weird exception has occurred'
 
         cost = 0
         pathLen = len(self.node_array)
-
-        # Determine if cost is linear or log:
-        is_linear = False
-        lin_costs = ('e', 'p', 'px', 'py', 'pz', 'fid')
-        if costType in lin_costs:
-            is_linear = True
-            costType = "d" + costType
 
         # Sum all edge costs of the path
         i = 0
@@ -91,26 +91,20 @@ class Path:
             assert edgeData != None, "Path does not exist in graph"
             assert edgeData[costType] != None, f"costType \'{costType}\' does not exist between qnodes \'{cur.name}\' and \'{nxt.name}\'"
 
-            # This might not be necessary
-            #if edgeData[costType] == np.inf:
-            #    return np.inf
-            #else:
-
             cost += edgeData[costType]
             i += 1
 
         # Sum all node costs of the path
         for node in self.node_array:
-
-            # Might not be necessary
-            # if node.costs[costType] == 'NaN':
-            #    return 'NaN'
-            #else:
             cost += node.costs[costType]
 
-        # If costType is linear, convert back to linear form
-        if is_linear:
+        # Convert costs back to linear form
+        if costType == 'd':
+            cost = QNET.fid_convert(cost, 'p')
+        elif costType == 'log_e':
             cost = QNET.convert(cost, 'linear')
+        else:
+            assert(False), 'A weird exception has occurred.'
 
         return cost
 

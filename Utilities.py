@@ -6,26 +6,19 @@ Created on Wed Mar 25 10:59:46 2020
 
 Definitions:
     p: 
-        Probability of a bell pair being distributed between A and B 
-        for a given path without the state changing
-    
+        Probability of a bell state being distributed without dephasing.
     e:
         Efficiency. The proportion of photons that make it through a channel
-        
     pz:
         Dephasing probability.
     px: 
         Bitflip probability
     py:
         yflip probability
-        
-    d**:
-        Logarithmic form
-    
-    Note for bell pairs, fidelity = p = 1 - px - py - pz
-
-    WARNING:
-        Future cost types cannot begin with the letter d. Find some way to assert this.
+    log_e:
+        -log(e)
+    d:
+        -log(abs(1 - 2p))
 """
 
 import copy
@@ -35,66 +28,53 @@ import QNET
 
 def make_cost_vector(e = 1, p = 1, px = 0, py = 0, pz = 0, **kwargs):
     """
-    Makes a cost vector for a qnode or qchan given cost parameters.
-    When p = 1 and (px, py, pz) != 0, p = 1 - dx, dy, dz
-    else when p != 1, pz = 1 - p
+    Creates a dictionary of costs for a qnode or qchan.
+
+    NOTE:
+        Dephasing probabilities (px, py, pz) are included here for future proofing and do not currently initialize.
+        At the moment we assume one axis of dephasing: pz = 1 - p
 
     :param float e: Proportion of photons that pass through the channel
-    :param float p: Proportion of surviving photons that haven't changed state
+    :param float p: Proportion of surviving photons that haven't changed state. Range: (0.5, 1)
     :param float px: Probability of x-flip (Bitflip)
     :param float py: Probability of y-flip
     :param float pz: Probability of z-flip (Dephasing)
     :param float kwargs: Other costs or qualifying attributes
-
     :return dictionary: Cost vector
+
+    Other instantiated costs:
+    log_e:
+        -log(e)
+    d:
+        -log(abs(2p - 1))
     """
-    cost_vector = {'e': e, 'p': p, 'px': px, 'py': py, 'pz': pz}
+    cost_vector = {'e': e, 'p': p, 'pz':pz}
+    cost_vector.update(kwargs)
 
-    for cost in cost_vector:
-        assert (0 <= cost_vector[cost] and cost_vector[
-            cost] <= 1), f"Probability \"{cost} = {cost_vector[cost]}\" out of range"
+    # Assert that costs are within the correct range:
+    assert(0 <= e <= 1), "Out of range"
+    assert(0 <= p <= 1), "Out of range"
 
-    # Initialize log probabilities
-    log_dict = {}
-    for cost in cost_vector:
-        x = cost_vector[cost]
-        if x == 0:
-            log = np.inf
-        else:
-            log = -1 * np.log(x) + 0
-        log_dict["d" + cost] = log
-
-    # Combine dictionaries
-    cost_vector.update(log_dict)
-
-    for attr in kwargs:
-        cost_vector[attr] = kwargs[attr]
-
-    # If p == 1 but there are non zero costs in (px, py, pz), calculate new values for p and log p.
+    # Caclulate pz from p or vice versa
     if p == 1:
-        cost_vector['p'] = 1 - px - py - pz
-        cost_vector['dp'] = convert(cost_vector['p'], 'log')
+        p = 1 - pz
+        cost_vector['p'] = p
+    elif pz == 0:
+        pz = 1 - p
+        cost_vector['pz'] = pz
 
-    # Else assume there is only dephasing along one axis:
-    else:
-        cost_vector['pz'] = 1 - p
-        cost_vector['dpz'] = convert(cost_vector['pz'], 'log')
+    # Calculate log_e
+    cost_vector['log_e'] = convert(e, 'log')
+
+    # Calculate d from p
+    cost_vector['d'] = fid_convert(p, 'd')
+
+    # Initialize other attributes
+    for arg in kwargs:
+        cost_vector[arg] = kwargs[arg]
 
     return cost_vector
 
-"""
-Old conversion functions 
-(DEPRECIATED)
-
-def P2Q(p):
-    return 1 - p
-
-def P2L(p):
-    return -1 * np.log(p)
-
-def L2P(l):
-    return np.exp(-l)
-"""
 
 def convert(x, typ = None):
     """
@@ -102,16 +82,15 @@ def convert(x, typ = None):
     Handles infinities and other exceptions
 
     :param float x: Value to convert
-    :param str typ: Usage: {'log', 'linear}
+    :param str typ: Type to convert to. Usage: {'log', 'linear}
     :return float: Converted value
     """
-
     valid_types = ['log', 'linear']
     assert(typ in valid_types), "Invalid type, please choose one from {\'log\', \'linear\'}"
 
     if typ == 'log':
         assert(0 <= x and x <= 1)
-        return(-1 * np.log(x))
+        return(-1 * np.log(x) + 0)
 
     elif typ == 'linear':
         assert(0 <= x)
@@ -121,20 +100,43 @@ def convert(x, typ = None):
         assert(False), "A weird exception has occurred."
 
 
+def fid_convert(x, typ = None):
+    """
+    Convert the fidelity 'p' into its additive form (d = -log(2p - 1)) or vice versa.
+    :param float x: Value to convert
+    :param str typ: Type to convert to. Usage: {'p', 'd'}
+    :return float: Converted value
+    """
+    valid_types = ['p', 'd']
+    assert(typ in valid_types), "Invalid type, please choose one from {\'p\', \'d\'}"
+
+    if typ == 'd':
+        return -np.log(np.abs(2 * x - 1)) + 0
+
+    elif typ == 'p':
+        return (1 + np.exp(-x))/2
+
+    else:
+        assert(False), "A weird exception has occurred."
+
+
 def shortest_path_length(Q, source, target, costType):
     """
-    Get the shortest path length in a Qnet for a given costType.
+    Get the shortest path cost in a Qnet for a given costType.
     Considers edge weights and node weights
-    Considers only valid paths.
+    # TODO Considers only valid paths.
 
     :param Q: Qnet Graph
-    :param str source: Name of source node
-    :param str target: Name of target node
+    :param Union[str, Qnode] source: Source node
+    :param Union[str, Qnode] target: Target node
     :param str costType: Any of {'e', 'p', 'de', 'dp'}
     :return: float length of shortest path in units of costType
     """
 
-    # TODO: Make it so that we only consider valid paths in QNET
+    # 1. Create copy of graph
+    # 2. Generate all simple paths
+    # 3. If path is not valid, remove it
+    # 4. Continue on with this modified graph
 
     def get_weight_function(costType):
         def weight(u, v, d):
@@ -144,31 +146,43 @@ def shortest_path_length(Q, source, target, costType):
             return node_u_wt / 2 + node_v_wt / 2 + edge_wt
         return weight
 
-    is_lin = False
-    if costType[0] != "d":
-        is_lin = True
-        costType = "d" + costType
+    assert costType in ['e', 'p'], "Please use one of the supported cost types: {'e', 'p'}"
 
-    assert(costType in ['de', 'dp']), "Please use one of the supported cost types: {'e', 'p', 'de', 'dp}"
+    if costType == 'e':
+        costType = 'log_e'
 
-    u = Q.getNode(source)
-    v = Q.getNode(target)
+    elif costType == 'p':
+        costType = 'd'
+
+    # Get node "u"
+    if isinstance(source, str):
+        u = Q.getNode(source)
+    elif isinstance(source, QNET.Qnode):
+        u = source
+    else:
+        assert False, f"Argument must be a string or reference to Qnode"
+
+    # Get node "v"
+    if isinstance(target, str):
+        v = Q.getNode(target)
+    elif isinstance(target, QNET.Qnode):
+        v = target
+    else:
+        assert False, f"Argument must be a string or reference to Qnode"
+
+    # u = Q.getNode(source)
+    # v = Q.getNode(target)
+
     weight = get_weight_function(costType)
     len = nx.shortest_path_length(Q, u, v, weight)
 
-    if is_lin == True:
+    if costType == 'log_e':
         len = convert(len, 'linear')
 
-    return len
+    elif costType == 'd':
+        len = fid_convert(len, 'p')
 
-# DEPRECIATED
-def weight(u, v, d):
-    if type(u) == QNET.Swapper:
-        return d['loss'] + QNET.P2L(u.prob)/2
-    elif type(v) == QNET.Swapper:
-        return d['loss'] + QNET.P2L(v.prob)/2
-    else:
-        return d['loss']
+    return len
 
 
 
