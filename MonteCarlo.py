@@ -69,7 +69,7 @@ def iterations(Q, nTurns = 100, nSteps = 11, toCompute = "pathProbability"):
         elif toCompute == "efficiency":
             # Monte-carlo Implementation to calculate efficiency  
             for i in range(nTurns): 
-                lossValue = 0
+                lossValue = 1
                 G  = Pc.defectedGraph(B, probThresh)
                 
                 try:
@@ -88,7 +88,7 @@ def iterations(Q, nTurns = 100, nSteps = 11, toCompute = "pathProbability"):
         elif toCompute == "fidelity":
             # Monte-carlo Implementation to calculate fidelity
             for i in range(nTurns):  
-                fidValue = 0
+                fidValue = 1
                 G  = Pc.defectedGraph(B, probThresh)
                 
                 try:
