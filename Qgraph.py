@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Tue Mar 24 17:22:47 2020
-
 @author: hudson
 """
 
@@ -43,10 +42,8 @@ class Qnet(nx.Graph):
     def add_qnode(self, qnode_type=None, **kwargs):
         """
         Initialize a qnode of some type and add it to the grah
-
         :param str qnode_type: qnode subclass
         :param kwargs: Keyword arguments needed to initialize the qnode
-
         :return: None
         """
 
@@ -87,7 +84,6 @@ class Qnet(nx.Graph):
         """
         Add a Qchan to the graph. If either of the node types are Satellites, the airCosts
         will be automatically calculated from current positions and added to the cost array.
-
         :param list edge: Array-like object of two qnodes to be connected
         :param float e: Proportion of photons that pass through the channel
         :param float p: Proportion of surviving photons that haven't changed state
@@ -117,16 +113,13 @@ class Qnet(nx.Graph):
     def add_qchans_from(self, cbunch):
         """
         Adds a list of channels connecting Qnodes
-
         Parameters
         ----------
         cbunch : array
             Array of dictionaries with channel attributes as key-value pairs
-
         Returns
         -------
         None.
-
         """
 
         for edge in cbunch:
@@ -136,11 +129,9 @@ class Qnet(nx.Graph):
     def print_qchans(self):
         """
         Print every channel in the qnet graph
-
         Returns
         -------
         None.
-
         """
         for chan in self.edges():
             # get costs:
@@ -151,17 +142,14 @@ class Qnet(nx.Graph):
     def getNode(self, nodeName):
         """
         Returns a qnode object with a given name. Assumes uniqueness
-
         Parameters
         ----------
         nodeName : TYPE
             DESCRIPTION.
-
         Returns
         -------
         node : qnode
             qnode with matching name
-
         """
         for node in self.nodes():
             if node.name == nodeName:
@@ -172,16 +160,13 @@ class Qnet(nx.Graph):
     def update(self, dt):
         """
         Updates all time dependent elements in the Qnet
-
         Parameters
         ----------
         dt : int
             Size of time increment
-
         Returns
         -------
         None.
-
         """
         assert (dt is not None)
 
@@ -213,24 +198,21 @@ class Qnet(nx.Graph):
                     new_p = newCost[1]
 
                     # Update edge
-                    # TODO: add edge isn't updating cost vector.
-                    self.add_edge(s, n, e=new_e, p=new_p)
+                    self.remove_edge(s, n)
+                    self.add_qchan(edge = [s.name, n.name], e=new_e, p=new_p)
 
     def purify(self, sourceName, targetName):
         """
-
         Parameters
         ----------
         sourceName : str
             Name of source node
         targetName : str
             Name of destination node
-
         Returns
         -------
         int
             Purified cost of the network from source to target
-
         """
 
         def fidTransform(F1, F2):
