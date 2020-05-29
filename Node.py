@@ -1,9 +1,19 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Mon May 25 18:48:05 2020
+
+@author: deepeshsingh
+"""
+
 import QNET
 import Utilities
 import numpy as np
 import scipy.integrate
 from pvlib import atmosphere
 import warnings
+from skyfield.api import EarthSatellite
+from skyfield.api import Topos, load
 
 # If qnode doesn't have a name, consider having a global counter that
 # keeps track of number of nodes and just names it after the number
@@ -74,9 +84,8 @@ class Ground(Qnode):
         super().__init__(name, coords, e, p, px, py, pz, **kwargs)
         
 
-class Satellite(Qnode):
-    def __init__(self, name = None, coords = [0]*3, e = 1, p = 1, px = 0, py = 0, pz = 0,
-                 velocity = [0]*2, range = 0, **kwargs):
+class Satellite(Qnode):    
+    def __init__(self, name = None, coords = [0,0,0], e = 1, p = 1, px = 0, py = 0, pz = 0, t  = 0, line1='', line2 ='', **kwargs):
         """
         Satellite initialization
         :param str name: Name of Qnode
@@ -90,43 +99,74 @@ class Satellite(Qnode):
         :param float satRange: Range of Satellite communication
         :param float kwargs: Other costs or qualifying attributes
         """
-        self.velocity = velocity
-        self.range = range
         super().__init__(name, coords, e, p, px, py, pz, **kwargs)
+        
+        global ts
+        global t_now
+        global t_startTime
+        global t_new
+        global satellite
 
-        # Warn user if satellite parameters aren't initialized
-        if (self.velocity == [0]*2):
-            warnings.warn(message = f"Satellite \'{self.name}\' has no velocity")
-        if (self.range == 0):
-            warnings.warn(message = f"Satellite \'{self.name}\' has no range")
+        ## Define the time at which the satellite is being tracked ##
+        ts = load.timescale()
+        t_now = ts.now()
+        t_startTime = ts.utc(t_now.utc[0], t_now.utc[1], t_now.utc[2], t_now.utc[3], t_now.utc[4], t_now.utc[5]+t)
+        t_new = t_startTime 
+
+        ## Initialise which satellite to track. Default is ISS Zarya ##
+        try:
+            satellite = EarthSatellite(line1, line2, self.name, ts)
+        except:    
+            stations_url = 'http://celestrak.com/NORAD/elements/stations.txt'
+            satellites = load.tle_file(stations_url)        
+            by_name = {sat.name: sat for sat in satellites}
+            satellite = by_name['ISS (ZARYA)']
+        
+        ## find satellite location in topocentric coordinates at given time with boston at center ##
+        geometry = satellite.at(t_new)
+        subpoint = geometry.subpoint()
+        print(t_now.utc)
+        
+
+        self.coords = [int(subpoint.latitude.degrees), int(subpoint.longitude.degrees), int(subpoint.elevation.km)]
+                     
+    def posUpdate(self, dt):   
+        global ts
+        global t_new
+        global sums
+        t_new = ts.utc(t_new.utc[0], t_new.utc[1], t_new.utc[2], t_new.utc[3], t_new.utc[4], t_new.utc[5]+dt)
+        geometry = satellite.at(t_new)
+        subpoint = geometry.subpoint()
+        self.coords = [int(subpoint.latitude.degrees), int(subpoint.longitude.degrees), int(subpoint.elevation.km)]
+        
+        return
     
-    def posUpdate(self, dt):
+    def setTime(self):
+        '''
+        Restart tracking the satellite. 
         
-        # MAX MAP DISTANCE:
-        MAX = 10000
+        Reset the time to the start time after function: QNET.update(dt) has been applied in some process
+
+        Returns
+        -------
+        None.
+
+        '''
+        global t_startTime
+        global t_new
+        t_new = t_startTime
         
-        i = 0
-        while i < 2:
-            self.coords[i] = self.coords[i] + self.velocity[i] * dt
-            if (self.coords[i] > MAX):
-                self.coords[i] = self.coords[i] - MAX
-            elif (self.coords[i] < 0):
-                self.coords[i] = self.coords[i] + MAX
-            i += 1
         return
     
     def distance(self, node):
+        global t_new        
+        node_location = Topos(float(node.coords[0]), float(node.coords[1]))
+        difference = satellite - node_location
+        topocentric = difference.at(t_new)
+        alt, az, distMagnitude = topocentric.altaz()
         
-        x = self.coords[0]
-        y = self.coords[1]
-        z = self.coords[2]
+        return int(distMagnitude.km/1000)
         
-        nx = node.coords[0]
-        ny = node.coords[1]
-        nz = node.coords[2]
-        
-        return np.sqrt((x - nx)**2 + (y - ny)**2 + (z - nz)**2)
-    
     def airCost(self, node):
         """
         :param Qnode() node: The target node for the satellite communication
@@ -140,14 +180,13 @@ class Satellite(Qnode):
         effective density.
         
         """
-
-        alt = self.coords[2]
-        
-        # Calculate ground distance from source to target:
+        global t_new        
+        node_location = Topos(float(node.coords[0]), float(node.coords[1]))
+        difference = satellite - node_location
+        topocentric = difference.at(t_new)
+        alt, az, dist1 = topocentric.altaz()
+        theta = alt.degrees
         dist = self.distance(node)
-            
-        # Calculate azimuthal angle 
-        theta = np.arcsin(alt / dist)
             
             
         """
@@ -168,6 +207,7 @@ class Satellite(Qnode):
             return P / (R * T)
             
         # Perform numerical integration to get effective density (?)
+        #d = scipy.integrate.quad(rho, 0, int(dist.km/1000), args = (theta))[0]
         d = scipy.integrate.quad(rho, 0, dist, args = (theta))[0]
 
         # TODO:
@@ -197,9 +237,19 @@ class Satellite(Qnode):
             # Attenuation coefficient
             K = 0.01
             return QNET.convert(d * K, 'linear')
-
+        
+        '''
+        ## Check if satellite is above the horizon before making an edge ##
+        if alt.degrees>0:
+            results = [transmission_probability(d), phasing_probability(d)]
+        else:
+            results = [0,0]
+        '''
+        
         results = [transmission_probability(d), phasing_probability(d)]
+        
         return results
+
      
 class Swapper(Qnode):   
     # prob is probability of succesful swapping between nodes
