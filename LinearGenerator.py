@@ -80,7 +80,7 @@ def altLinGen(n, spacing, eVal = 1, pxVal = 0, pyVal = 0, pzVal = 0):
     return Q
 
 
-def altLinSatGen(n, spacing, eVal = 1, pxVal = 0, pyVal = 0, pzVal = 0, satCoord = [0,0,0], satVel = [0,0]):
+def altLinSatGen(n, spacing, eVal = 1, pxVal = 0, pyVal = 0, pzVal = 0, startTime = 0, Line1 = '', Line2 ='', *args):
     '''
     Constructs a linear chain with end Qnodes A and B, and alternating Swapper and Ground nodes in the middle.
     
@@ -100,10 +100,12 @@ def altLinSatGen(n, spacing, eVal = 1, pxVal = 0, pyVal = 0, pzVal = 0, satCoord
         Probability of state not undergoing Y-flip in the regular lattice. The default is 0.
     pzVal : float
         Probability of state not undergoing Z-flip in the regular lattice. The default is 0.
-    satCoord : Array of float
-        Initial coordinates of the satellite node in [x,y,z] format. The default is [0,0,0].
-    satVel : Array of float
-        Initial velocity of the satellite node in [x,y] format. The default is [0,0].
+    startTime : int
+        Time in seconds from now (current time) starting which the satellite should be tracked. The default is 0. 
+    Line1 : String
+        Line 1 of satellite TLE. The deault is ''.
+    Line2 : String
+        Line 2 of satellite TLE. The deault is ''.
 
     Returns
     -------
@@ -151,16 +153,13 @@ def altLinSatGen(n, spacing, eVal = 1, pxVal = 0, pyVal = 0, pzVal = 0, satCoord
         ChannelList.append({'edge': (firstNode.name, list(Q.nodes)[1].name), 'e': eVal, 'px': pxVal, 'py': pyVal, 'pz': pzVal})
         ChannelList.append({'edge': (list(Q.nodes)[n-2].name, lastNode.name), 'e': eVal, 'px': pxVal, 'py': pyVal, 'pz': pzVal})
 
-    S = QNET.Satellite(name = 'S', coords = satCoord, velocity = satVel)
+    S = QNET.Satellite(name = 'S', t = startTime, line1 = Line1, line2 = Line2)
     Q.add_node(S)
-    print(S.name)
     
     nodeList = Q.nodes()
     for node in nodeList:
         if type(node) != QNET.Ground and type(node) != QNET.Satellite:
-            ChannelList.append({'edge': (node.name, S.name), 'loss': S.airCost(node)})            
-            #ChannelList.append(node, S, loss = S.airCost(node))
-            # G.add_edge(node, S2, loss = QNET.airCost(S2, node))
+            ChannelList.append({'edge': (node.name, S.name)})            
             
     Q.add_qchans_from(ChannelList)
      
