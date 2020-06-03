@@ -87,17 +87,39 @@ class Ground(Qnode):
 class Satellite(Qnode):    
     def __init__(self, name = None, coords = [0,0,0], e = 1, p = 1, px = 0, py = 0, pz = 0, t  = 0, line1='', line2 ='', **kwargs):
         """
-        Satellite initialization
-        :param str name: Name of Qnode
-        :param list coords: Cartesian coordinates. Usage: [x,y,z]
-        :param float e: Efficiancy. Proportion of photons that pass through the Qnode
-        :param float p: Proportion of surviving photons that haven't changed state
-        :param float px: Probability of x-flip (Bitflip)
-        :param float py: Probability of y-flip
-        :param float pz: Probability of z-flip (Dephasing)
-        :param list velocity: Cartesian coordinates. Usage [vx, vy]
-        :param float satRange: Range of Satellite communication
-        :param float kwargs: Other costs or qualifying attributes
+        Initialises the satellite. 
+        
+        Initialises the satellite using the given TLE lines. If the TLE is invalid, the satellite is initialised to ISS Zarya by default. 
+
+        Parameters
+        ----------
+        name : String
+            Name of the satellite. The default is None.
+        coords : Array of floats
+            Coords of satellite, usage [x,y,z]. The default is [0,0,0].
+        e : float
+            Efficiancy. The default is 1.
+        p : float
+            Proportion of surviving photons that haven't changed state. The default is 1.
+        px : float
+            Probability of x-flip (Bitflip). The default is 0.
+        py : float
+            Probability of y-flip. The default is 0.
+        pz : float
+            Probability of z-flip (Dephasing). The default is 0.
+        t : float
+            Time (in seconds) ahead of the current time from which the satellite is started being tracked. The default is 0.
+        line1 : String
+            Line 1 of TLE of the satellite to be added in the network. The default is ''.
+        line2 : String
+            Line 2 of TLE of the satellite to be added in the network. The default is ''.
+        **kwargs : TYPE
+            Other costs or qualifying attributes.
+
+        Returns
+        -------
+        None.
+
         """
         super().__init__(name, coords, e, p, px, py, pz, **kwargs)
         
@@ -116,20 +138,21 @@ class Satellite(Qnode):
         ## Initialise which satellite to track. Default is ISS Zarya ##
         try:
             satellite = EarthSatellite(line1, line2, self.name, ts)
+            geometry = satellite.at(t_new)
+            subpoint = geometry.subpoint()  
+            self.coords = [int(subpoint.latitude.degrees), int(subpoint.longitude.degrees), int(subpoint.elevation.km)]
         except:    
-            stations_url = 'http://celestrak.com/NORAD/elements/stations.txt'
-            satellites = load.tle_file(stations_url)        
-            by_name = {sat.name: sat for sat in satellites}
-            satellite = by_name['ISS (ZARYA)']
-        
-        ## find satellite location in topocentric coordinates at given time with boston at center ##
-        geometry = satellite.at(t_new)
-        subpoint = geometry.subpoint()
-        print(t_now.utc)
-        
+            # Add ISS Zarya to the network by default if the given TLE is invalid
+            # l1 and l2 are TLE of ISS Zarya
+            l1 = '1 25544U 98067A   20154.85125762  .00002004  00000-0  43906-4 0  9990'
+            l2 = '2 25544  51.6443  59.4222 0002071  22.0017  92.6243 15.49416742229799'
+            satellite = EarthSatellite(l1, l2, self.name, ts)
+            geometry = satellite.at(t_new)
+            subpoint = geometry.subpoint()
+            self.coords = [int(subpoint.latitude.degrees), int(subpoint.longitude.degrees), int(subpoint.elevation.km)]
 
-        self.coords = [int(subpoint.latitude.degrees), int(subpoint.longitude.degrees), int(subpoint.elevation.km)]
-                     
+        print(t_now.utc)
+                             
     def posUpdate(self, dt):   
         global ts
         global t_new
@@ -238,13 +261,15 @@ class Satellite(Qnode):
             K = 0.01
             return QNET.convert(d * K, 'linear')
         
-        '''
+        
         ## Check if satellite is above the horizon before making an edge ##
+        '''
         if alt.degrees>0:
             results = [transmission_probability(d), phasing_probability(d)]
         else:
             results = [0,0]
         '''
+        
         
         results = [transmission_probability(d), phasing_probability(d)]
         
