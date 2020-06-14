@@ -15,9 +15,6 @@ import warnings
 from skyfield.api import EarthSatellite
 from skyfield.api import Topos, load
 
-# If qnode doesn't have a name, consider having a global counter that
-# keeps track of number of nodes and just names it after the number
-
 class Qnode:
     """
     Default Qnode Class
@@ -66,7 +63,7 @@ class Qnode:
             assert(False), f"\"{costType}\" is not a cost or attribute of \"{self.name}\"."
 
 
-########## SUB CLASSES ##########
+# SUB CLASSES
 
 class Ground(Qnode):
     def __init__(self, name = None, coords = [0]*3, e = 1, p = 1, px = 0, py = 0, pz = 0, **kwargs):
@@ -85,11 +82,13 @@ class Ground(Qnode):
         
 
 class Satellite(Qnode):    
-    def __init__(self, name = None, coords = [0,0,0], e = 1, p = 1, px = 0, py = 0, pz = 0, t  = 0, line1='', line2 ='', **kwargs):
+    def __init__(self, name=None, coords=[0,0,0], e=1, p=1, px=0, py=0, pz=0, t=0, v_cart=[0, 0], line1=None,
+                 line2=None, cartesian=True, **kwargs):
         """
-        Initialises the satellite. 
-        
-        Initialises the satellite using the given TLE lines. If the TLE is invalid, the satellite is initialised to ISS Zarya by default. 
+        Intialises the satellite class. If cartesian == True, satellite coordinates will be cartesian and  it will
+        travel in a fixed plane.
+        Else the satellite will be initalised with the given TLEs with geodesic coordinates.
+        If either TLE is invalid or None, the satellite defaults to ISS Zarya with geodesic coordinates
 
         Parameters
         ----------
@@ -109,6 +108,8 @@ class Satellite(Qnode):
             Probability of z-flip (Dephasing). The default is 0.
         t : float
             Time (in seconds) ahead of the current time from which the satellite is started being tracked. The default is 0.
+        v_cart: Array of floats
+            Cartesian velocity of Satellite.
         line1 : String
             Line 1 of TLE of the satellite to be added in the network. The default is ''.
         line2 : String
@@ -121,46 +122,61 @@ class Satellite(Qnode):
         None.
 
         """
-        super().__init__(name, coords, e, p, px, py, pz, **kwargs)
-        
-        global ts
-        global t_now
-        global t_startTime
-        global t_new
-        global satellite
+        # Initialise coordinate type
+        self.cartesian = cartesian
 
-        ## Define the time at which the satellite is being tracked ##
-        ts = load.timescale()
-        t_now = ts.now()
-        t_startTime = ts.utc(t_now.utc[0], t_now.utc[1], t_now.utc[2], t_now.utc[3], t_now.utc[4], t_now.utc[5]+t)
-        t_new = t_startTime 
+        if cartesian is True:
+            self.velocity = v_cart
+            super().__init__(name, coords, e, p, px, py, pz, **kwargs)
 
-        ## Initialise which satellite to track. Default is ISS Zarya ##
-        try:
-            satellite = EarthSatellite(line1, line2, self.name, ts)
-            geometry = satellite.at(t_new)
-            subpoint = geometry.subpoint()  
-            self.coords = [int(subpoint.latitude.degrees), int(subpoint.longitude.degrees), int(subpoint.elevation.km)]
-        except:    
-            # Add ISS Zarya to the network by default if the given TLE is invalid
-            # l1 and l2 are TLE of ISS Zarya
-            l1 = '1 25544U 98067A   20154.85125762  .00002004  00000-0  43906-4 0  9990'
-            l2 = '2 25544  51.6443  59.4222 0002071  22.0017  92.6243 15.49416742229799'
-            satellite = EarthSatellite(l1, l2, self.name, ts)
+        else:
+            # TODO: Figure out where globals should go?
+            global ts
+            global t_now
+            global t_startTime
+            global t_new
+            global satellite
+
+            ## Define the time at which the satellite is being tracked ##
+            ts = load.timescale()
+            t_now = ts.now()
+            t_startTime = ts.utc(t_now.utc[0], t_now.utc[1], t_now.utc[2], t_now.utc[3], t_now.utc[4], t_now.utc[5]+t)
+            t_new = t_startTime
+
+            ## Initialise which satellite to track. Default is ISS Zarya ##
+            try:
+                satellite = EarthSatellite(line1, line2, self.name, ts)
+                geometry = satellite.at(t_new)
+                subpoint = geometry.subpoint()
+                self.coords = [int(subpoint.latitude.degrees), int(subpoint.longitude.degrees), int(subpoint.elevation.km)]
+            except:
+                # Add ISS Zarya to the network by default if the given TLE is invalid
+                # l1 and l2 are TLE of ISS Zarya
+                l1 = '1 25544U 98067A   20154.85125762  .00002004  00000-0  43906-4 0  9990'
+                l2 = '2 25544  51.6443  59.4222 0002071  22.0017  92.6243 15.49416742229799'
+                satellite = EarthSatellite(l1, l2, self.name, ts)
+                geometry = satellite.at(t_new)
+                subpoint = geometry.subpoint()
+                geo_coords = [int(subpoint.latitude.degrees), int(subpoint.longitude.degrees), int(subpoint.elevation.km)]
+                super().__init__(name, geo_coords, e, p, px, py, pz, **kwargs)
+
+            print(t_now.utc)
+
+    def posUpdate(self, dt):
+        if self.cartesian is True:
+            vx = self.velocity[0]
+            vy = self.velocity[1]
+            self.coords = [self.coords[0] + vx * dt, self.coords[1] + vy * dt, self.coords[2]]
+
+        else:
+            # TODO: Figure out where globals should go?
+            global ts
+            global t_new
+            global sums
+            t_new = ts.utc(t_new.utc[0], t_new.utc[1], t_new.utc[2], t_new.utc[3], t_new.utc[4], t_new.utc[5]+dt)
             geometry = satellite.at(t_new)
             subpoint = geometry.subpoint()
             self.coords = [int(subpoint.latitude.degrees), int(subpoint.longitude.degrees), int(subpoint.elevation.km)]
-
-        print(t_now.utc)
-                             
-    def posUpdate(self, dt):   
-        global ts
-        global t_new
-        global sums
-        t_new = ts.utc(t_new.utc[0], t_new.utc[1], t_new.utc[2], t_new.utc[3], t_new.utc[4], t_new.utc[5]+dt)
-        geometry = satellite.at(t_new)
-        subpoint = geometry.subpoint()
-        self.coords = [int(subpoint.latitude.degrees), int(subpoint.longitude.degrees), int(subpoint.elevation.km)]
         
         return
     
@@ -180,6 +196,11 @@ class Satellite(Qnode):
         t_new = t_startTime
         
         return
+
+    def cart_distance(self, node):
+        sx, sy, sz = self.coords
+        x, y, z = node.coords
+        return np.sqrt((x-sx)**2 + (y-sy)**2 + (z-sz)**2)
     
     def distance(self, node):
         global t_new        
@@ -203,14 +224,23 @@ class Satellite(Qnode):
         effective density.
         
         """
-        global t_new        
-        node_location = Topos(float(node.coords[0]), float(node.coords[1]))
-        difference = satellite - node_location
-        topocentric = difference.at(t_new)
-        alt, az, dist1 = topocentric.altaz()
-        theta = alt.degrees
-        dist = self.distance(node)
-            
+        if self.cartesian is True:
+            # Straight line distance between nodes
+            dist = self.cart_distance(node)
+            # Difference in altitude
+            dz = self.coords[2] - node.coords[2]
+            assert(dz > 0), f"Satellite altitude [{self.coords[2]}] must be greater than node altitude. [{node.coords[2]}]"
+            # Altitude angle
+            theta = np.arcsin(dz/dist)
+
+        else:
+            global t_new
+            node_location = Topos(float(node.coords[0]), float(node.coords[1]))
+            difference = satellite - node_location
+            topocentric = difference.at(t_new)
+            alt, az, dist1 = topocentric.altaz()
+            theta = alt.degrees
+            dist = self.distance(node)
             
         """
         Line integral for effective density
@@ -261,7 +291,7 @@ class Satellite(Qnode):
             K = 0.01
             return QNET.convert(d * K, 'linear')
         
-        
+
         ## Check if satellite is above the horizon before making an edge ##
         '''
         if alt.degrees>0:
@@ -269,7 +299,6 @@ class Satellite(Qnode):
         else:
             results = [0,0]
         '''
-        
         
         results = [transmission_probability(d), phasing_probability(d)]
         

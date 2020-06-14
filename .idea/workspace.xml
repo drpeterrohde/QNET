@@ -3,15 +3,14 @@
   <component name="ChangeListManager">
     <list default="true" id="e84bdf82-fe58-45b5-b532-1e191725560c" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Demo.py" beforeDir="false" afterPath="$PROJECT_DIR$/Demo.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Graph4.py" beforeDir="false" afterPath="$PROJECT_DIR$/Graph4.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.ipynb_checkpoints/Untitled-checkpoint.ipynb" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Demo.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Demo.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ExampleCode.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/ExampleCode.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MonteCarlo.py" beforeDir="false" afterPath="$PROJECT_DIR$/MonteCarlo.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Node.py" beforeDir="false" afterPath="$PROJECT_DIR$/Node.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Path.py" beforeDir="false" afterPath="$PROJECT_DIR$/Path.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PathTest.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/PercolationTest.py" beforeDir="false" afterPath="$PROJECT_DIR$/PercolationTest.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/QNET.py" beforeDir="false" afterPath="$PROJECT_DIR$/QNET.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Qgraph.py" beforeDir="false" afterPath="$PROJECT_DIR$/Qgraph.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/RegularLattice.py" beforeDir="false" afterPath="$PROJECT_DIR$/RegularLattice.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/SimFunctions.py" beforeDir="false" afterPath="$PROJECT_DIR$/SimFunctions.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Utilities.py" beforeDir="false" afterPath="$PROJECT_DIR$/Utilities.py" afterDir="false" />
     </list>
@@ -42,38 +41,17 @@
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="com.intellij.ide.scratch.LRUPopupBuilder$1/New Scratch File" value="Python" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$USER_HOME$/Downloads" />
     <property name="settings.editor.selected.configurable" value="reference.settingsdialog.IDE.editor.colors" />
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$USER_HOME$/Downloads" />
       <recent name="$PROJECT_DIR$" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.PercolationTest">
-    <configuration name="Lattice_test" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="QNET" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$APPLICATION_CONFIG_DIR$/scratches" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$APPLICATION_CONFIG_DIR$/scratches/Lattice_test.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="PercolationTest" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+  <component name="RunManager" selected="Python.Graph2">
+    <configuration name="Graph2" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="QNET" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -86,29 +64,7 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/PercolationTest.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="Percolation_scratch" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="QNET" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$APPLICATION_CONFIG_DIR$/scratches" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$APPLICATION_CONFIG_DIR$/scratches/Percolation_scratch.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Graph2.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -139,7 +95,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="shortest_path_test" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="Swapper" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="QNET" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -152,7 +108,51 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$APPLICATION_CONFIG_DIR$/scratches/shortest_path_test.py" />
+      <option name="SCRIPT_NAME" value="$APPLICATION_CONFIG_DIR$/scratches/Swapper.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="path_gen_test" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="QNET" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$APPLICATION_CONFIG_DIR$/scratches" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$APPLICATION_CONFIG_DIR$/scratches/path_gen_test.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="swap_reduce" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="QNET" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$APPLICATION_CONFIG_DIR$/scratches" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$APPLICATION_CONFIG_DIR$/scratches/swap_reduce.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -163,18 +163,18 @@
     </configuration>
     <list>
       <item itemvalue="Python.Satellite_test" />
-      <item itemvalue="Python.Percolation_scratch" />
-      <item itemvalue="Python.PercolationTest" />
-      <item itemvalue="Python.Lattice_test" />
-      <item itemvalue="Python.shortest_path_test" />
+      <item itemvalue="Python.Swapper" />
+      <item itemvalue="Python.path_gen_test" />
+      <item itemvalue="Python.swap_reduce" />
+      <item itemvalue="Python.Graph2" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.PercolationTest" />
-        <item itemvalue="Python.shortest_path_test" />
-        <item itemvalue="Python.Percolation_scratch" />
-        <item itemvalue="Python.Lattice_test" />
+        <item itemvalue="Python.Graph2" />
+        <item itemvalue="Python.swap_reduce" />
         <item itemvalue="Python.Satellite_test" />
+        <item itemvalue="Python.path_gen_test" />
+        <item itemvalue="Python.Swapper" />
       </list>
     </recent_temporary>
   </component>
@@ -212,7 +212,26 @@
       <workItem from="1589848173417" duration="11601000" />
       <workItem from="1589944782757" duration="9824000" />
       <workItem from="1590114324528" duration="6173000" />
-      <workItem from="1590193438213" duration="18187000" />
+      <workItem from="1590193438213" duration="25065000" />
+      <workItem from="1590300349182" duration="1223000" />
+      <workItem from="1590364484090" duration="1847000" />
+      <workItem from="1590721291243" duration="18434000" />
+      <workItem from="1590786881379" duration="4170000" />
+      <workItem from="1590962004348" duration="2850000" />
+      <workItem from="1590973721442" duration="8043000" />
+      <workItem from="1591006091936" duration="2928000" />
+      <workItem from="1591060380074" duration="683000" />
+      <workItem from="1591075862814" duration="5362000" />
+      <workItem from="1591230665218" duration="1262000" />
+      <workItem from="1591329746321" duration="2054000" />
+      <workItem from="1591447063099" duration="596000" />
+      <workItem from="1591670374017" duration="4042000" />
+      <workItem from="1591676081168" duration="4573000" />
+      <workItem from="1591683233428" duration="885000" />
+      <workItem from="1591699933799" duration="3050000" />
+      <workItem from="1591850890094" duration="2984000" />
+      <workItem from="1591926373452" duration="7553000" />
+      <workItem from="1592088321425" duration="7008000" />
     </task>
     <task id="LOCAL-00001" summary="First time committing from PyCharm.&#10;Including tester file for 3d visualisation tools I want to use in jupyter notebook and also including live_demo file for Deepesh">
       <created>1587466301996</created>
@@ -242,7 +261,14 @@
       <option name="project" value="LOCAL" />
       <updated>1589604498298</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="+ Fixed QNET.shortest_path_cost&#10;+ Fixed QNET.path_cost&#10;+ Created QNET.plot_2d&#10;&#10;TODO:&#10;- Fix satellite channels&#10;- Find out why p &lt; 0.5 messes up in PercolationTest.py">
+      <created>1590228000945</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1590228000945</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -252,61 +278,66 @@
     <MESSAGE value="First time committing from PyCharm.&#10;Including tester file for 3d visualisation tools I want to use in jupyter notebook and also including live_demo file for Deepesh" />
     <MESSAGE value="+ All relevant costs added in __init__ for qnodes and qchans&#10;+ Specific kwargs given for qnodes for better docstrings&#10;+ Cleaned up Purify&#10;+ Created QNET.get_shortest_path_cost to handle situations the nx.shortest_path couldn't.&#10;+ Added Path.is_valid()" />
     <MESSAGE value="+ Fixed bug in add_qchan where 'e' = 1 was always being initialized&#10;+ Updated airCost so it returns [e, p]&#10;+ Updated make_cost_vector so if p != 1, pz = 1 - p&#10;+ Updated make_qchan so that Satellite airCosts are initialized." />
-    <option name="LAST_COMMIT_MESSAGE" value="+ Fixed bug in add_qchan where 'e' = 1 was always being initialized&#10;+ Updated airCost so it returns [e, p]&#10;+ Updated make_cost_vector so if p != 1, pz = 1 - p&#10;+ Updated make_qchan so that Satellite airCosts are initialized." />
+    <MESSAGE value="+ Fixed QNET.shortest_path_cost&#10;+ Fixed QNET.path_cost&#10;+ Created QNET.plot_2d&#10;&#10;TODO:&#10;- Fix satellite channels&#10;- Find out why p &lt; 0.5 messes up in PercolationTest.py" />
+    <option name="LAST_COMMIT_MESSAGE" value="+ Fixed QNET.shortest_path_cost&#10;+ Fixed QNET.path_cost&#10;+ Created QNET.plot_2d&#10;&#10;TODO:&#10;- Fix satellite channels&#10;- Find out why p &lt; 0.5 messes up in PercolationTest.py" />
   </component>
   <component name="WindowStateProjectService">
     <state x="453" y="211" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1587532609739">
       <screen x="70" y="27" width="1850" height="1053" />
     </state>
     <state x="453" y="211" key="#com.intellij.execution.impl.EditConfigurationsDialog/70.27.1850.1053@70.27.1850.1053" timestamp="1587532609739" />
-    <state x="886" y="348" width="591" height="403" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1587464006222">
+    <state x="839" y="183" width="591" height="403" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1591230787681">
       <screen x="70" y="27" width="1850" height="1053" />
     </state>
-    <state x="886" y="348" width="591" height="403" key="#com.intellij.fileTypes.FileTypeChooser/70.27.1850.1053@70.27.1850.1053" timestamp="1587464006222" />
-    <state x="416" y="98" width="912" height="612" key="CommitChangelistDialog2" timestamp="1589604498119">
+    <state x="839" y="183" width="591" height="403" key="#com.intellij.fileTypes.FileTypeChooser/70.27.1850.1053@70.27.1850.1053" timestamp="1591230787681" />
+    <state x="416" y="98" width="912" height="612" key="CommitChangelistDialog2" timestamp="1590228000756">
       <screen x="70" y="27" width="1850" height="1053" />
     </state>
-    <state x="416" y="98" width="912" height="612" key="CommitChangelistDialog2/70.27.1850.1053@70.27.1850.1053" timestamp="1589604498119" />
+    <state x="416" y="98" width="912" height="612" key="CommitChangelistDialog2/70.27.1850.1053@70.27.1850.1053" timestamp="1590228000756" />
     <state x="159" y="273" width="1480" height="879" key="DiffContextDialog" timestamp="1587466206477">
       <screen x="70" y="27" width="1850" height="1053" />
     </state>
     <state x="159" y="273" width="1480" height="879" key="DiffContextDialog/70.27.1850.1053@70.27.1850.1053" timestamp="1587466206477" />
-    <state x="795" y="44" width="495" height="520" key="FileChooserDialogImpl" timestamp="1589149560123">
+    <state x="795" y="44" width="495" height="520" key="FileChooserDialogImpl" timestamp="1591937047099">
       <screen x="70" y="27" width="1850" height="1053" />
     </state>
-    <state x="795" y="44" width="495" height="520" key="FileChooserDialogImpl/70.27.1850.1053@70.27.1850.1053" timestamp="1589149560123" />
-    <state width="987" height="228" key="GridCell.Tab.0.bottom" timestamp="1590227613976">
+    <state x="795" y="44" width="495" height="520" key="FileChooserDialogImpl/70.27.1850.1053@70.27.1850.1053" timestamp="1591937047099" />
+    <state width="1155" height="272" key="GridCell.Tab.0.bottom" timestamp="1592098141131">
       <screen x="70" y="27" width="1850" height="1053" />
     </state>
-    <state width="987" height="228" key="GridCell.Tab.0.bottom/70.27.1850.1053@70.27.1850.1053" timestamp="1590227613976" />
-    <state width="987" height="228" key="GridCell.Tab.0.center" timestamp="1590227613975">
+    <state width="1155" height="272" key="GridCell.Tab.0.bottom/70.27.1850.1053@70.27.1850.1053" timestamp="1592098141131" />
+    <state width="1155" height="272" key="GridCell.Tab.0.center" timestamp="1592098141129">
       <screen x="70" y="27" width="1850" height="1053" />
     </state>
-    <state width="987" height="228" key="GridCell.Tab.0.center/70.27.1850.1053@70.27.1850.1053" timestamp="1590227613975" />
-    <state width="987" height="228" key="GridCell.Tab.0.left" timestamp="1590227613975">
+    <state width="1155" height="272" key="GridCell.Tab.0.center/70.27.1850.1053@70.27.1850.1053" timestamp="1592098141129" />
+    <state width="1155" height="272" key="GridCell.Tab.0.left" timestamp="1592098141128">
       <screen x="70" y="27" width="1850" height="1053" />
     </state>
-    <state width="987" height="228" key="GridCell.Tab.0.left/70.27.1850.1053@70.27.1850.1053" timestamp="1590227613975" />
-    <state width="987" height="228" key="GridCell.Tab.0.right" timestamp="1590227613975">
+    <state width="1155" height="272" key="GridCell.Tab.0.left/70.27.1850.1053@70.27.1850.1053" timestamp="1592098141128" />
+    <state width="1155" height="272" key="GridCell.Tab.0.right" timestamp="1592098141130">
       <screen x="70" y="27" width="1850" height="1053" />
     </state>
-    <state width="987" height="228" key="GridCell.Tab.0.right/70.27.1850.1053@70.27.1850.1053" timestamp="1590227613975" />
-    <state width="1804" height="299" key="GridCell.Tab.1.bottom" timestamp="1590227395374">
+    <state width="1155" height="272" key="GridCell.Tab.0.right/70.27.1850.1053@70.27.1850.1053" timestamp="1592098141130" />
+    <state width="1155" height="272" key="GridCell.Tab.1.bottom" timestamp="1592098141134">
       <screen x="70" y="27" width="1850" height="1053" />
     </state>
-    <state width="1804" height="299" key="GridCell.Tab.1.bottom/70.27.1850.1053@70.27.1850.1053" timestamp="1590227395374" />
-    <state width="1804" height="299" key="GridCell.Tab.1.center" timestamp="1590227395373">
+    <state width="1155" height="272" key="GridCell.Tab.1.bottom/70.27.1850.1053@70.27.1850.1053" timestamp="1592098141134" />
+    <state width="1155" height="272" key="GridCell.Tab.1.center" timestamp="1592098141133">
       <screen x="70" y="27" width="1850" height="1053" />
     </state>
-    <state width="1804" height="299" key="GridCell.Tab.1.center/70.27.1850.1053@70.27.1850.1053" timestamp="1590227395373" />
-    <state width="1804" height="299" key="GridCell.Tab.1.left" timestamp="1590227395373">
+    <state width="1155" height="272" key="GridCell.Tab.1.center/70.27.1850.1053@70.27.1850.1053" timestamp="1592098141133" />
+    <state width="1155" height="272" key="GridCell.Tab.1.left" timestamp="1592098141132">
       <screen x="70" y="27" width="1850" height="1053" />
     </state>
-    <state width="1804" height="299" key="GridCell.Tab.1.left/70.27.1850.1053@70.27.1850.1053" timestamp="1590227395373" />
-    <state width="1804" height="299" key="GridCell.Tab.1.right" timestamp="1590227395373">
+    <state width="1155" height="272" key="GridCell.Tab.1.left/70.27.1850.1053@70.27.1850.1053" timestamp="1592098141132" />
+    <state width="1155" height="272" key="GridCell.Tab.1.right" timestamp="1592098141133">
       <screen x="70" y="27" width="1850" height="1053" />
     </state>
-    <state width="1804" height="299" key="GridCell.Tab.1.right/70.27.1850.1053@70.27.1850.1053" timestamp="1590227395373" />
+    <state width="1155" height="272" key="GridCell.Tab.1.right/70.27.1850.1053@70.27.1850.1053" timestamp="1592098141133" />
+    <state x="250" y="117" width="1480" height="879" key="MergeDialog" timestamp="1591851129163">
+      <screen x="70" y="27" width="1850" height="1053" />
+    </state>
+    <state x="250" y="117" width="1480" height="879" key="MergeDialog/70.27.1850.1053@70.27.1850.1053" timestamp="1591851129163" />
     <state x="798" y="424" width="476" height="271" key="MultipleFileMergeDialog" timestamp="1587466393193">
       <screen x="70" y="27" width="1850" height="1053" />
     </state>
@@ -315,14 +346,14 @@
       <screen x="70" y="27" width="1850" height="1053" />
     </state>
     <state x="177" y="65" width="1548" height="874" key="SettingsEditor/70.27.1850.1053@70.27.1850.1053" timestamp="1589149808779" />
-    <state x="587" y="161" width="1074" height="792" key="Vcs.Push.Dialog.v2" timestamp="1589604520397">
+    <state x="587" y="161" width="1074" height="792" key="Vcs.Push.Dialog.v2" timestamp="1590228031709">
       <screen x="70" y="27" width="1850" height="1053" />
     </state>
-    <state x="587" y="161" width="1074" height="792" key="Vcs.Push.Dialog.v2/70.27.1850.1053@70.27.1850.1053" timestamp="1589604520397" />
-    <state x="766" y="468" width="458" height="177" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1590214505316">
+    <state x="587" y="161" width="1074" height="792" key="Vcs.Push.Dialog.v2/70.27.1850.1053@70.27.1850.1053" timestamp="1590228031709" />
+    <state x="766" y="468" width="458" height="177" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1591850904453">
       <screen x="70" y="27" width="1850" height="1053" />
     </state>
-    <state x="766" y="468" width="458" height="177" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/70.27.1850.1053@70.27.1850.1053" timestamp="1590214505316" />
+    <state x="766" y="468" width="458" height="177" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/70.27.1850.1053@70.27.1850.1053" timestamp="1591850904453" />
     <state x="720" y="247" width="539" height="619" key="git4idea.branch.GitSmartOperationDialog" timestamp="1589148698019">
       <screen x="70" y="27" width="1850" height="1053" />
     </state>
@@ -369,14 +400,19 @@
           <option name="timeStamp" value="20" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$APPLICATION_CONFIG_DIR$/scratches/Satellite_test.py</url>
-          <line>8</line>
-          <option name="timeStamp" value="21" />
+          <url>file://$PROJECT_DIR$/PercolationTest.py</url>
+          <line>79</line>
+          <option name="timeStamp" value="26" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/PercolationTest.py</url>
-          <line>80</line>
-          <option name="timeStamp" value="22" />
+          <url>file://$APPLICATION_CONFIG_DIR$/scratches/fast_purify.py</url>
+          <line>39</line>
+          <option name="timeStamp" value="27" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$APPLICATION_CONFIG_DIR$/scratches/swap_reduce.py</url>
+          <line>212</line>
+          <option name="timeStamp" value="31" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
@@ -389,24 +425,31 @@
     </breakpoint-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/QNET$bi_purify_test.coverage" NAME="bi_purify_test Coverage Results" MODIFIED="1589608887293" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
     <SUITE FILE_PATH="coverage/QNET$scratch_2.coverage" NAME="scratch_2 Coverage Results" MODIFIED="1589849361808" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
     <SUITE FILE_PATH="coverage/QNET$shortest_path_test.coverage" NAME="shortest_path_test Coverage Results" MODIFIED="1590226702016" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
-    <SUITE FILE_PATH="coverage/QNET$scratch_1.coverage" NAME="scratch_1 Coverage Results" MODIFIED="1587607634581" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
     <SUITE FILE_PATH="coverage/QNET$3dtest.coverage" NAME="3dtest Coverage Results" MODIFIED="1589155024368" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/QNET$get_cost_test.coverage" NAME="get_cost_test Coverage Results" MODIFIED="1589859077096" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
-    <SUITE FILE_PATH="coverage/QNET$Satellite_test.coverage" NAME="Satellite_test Coverage Results" MODIFIED="1590209821040" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
-    <SUITE FILE_PATH="coverage/QNET$Demo.coverage" NAME="Demo Coverage Results" MODIFIED="1590209577984" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/QNET$stdTest.coverage" NAME="stdTest Coverage Results" MODIFIED="1590976158684" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
+    <SUITE FILE_PATH="coverage/QNET$Satellite_test.coverage" NAME="Satellite_test Coverage Results" MODIFIED="1591856172072" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
     <SUITE FILE_PATH="coverage/QNET$Path.coverage" NAME="Path Coverage Results" MODIFIED="1587607731714" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/QNET$SimFuncTests.coverage" NAME="SimFuncTests Coverage Results" MODIFIED="1590209552782" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
+    <SUITE FILE_PATH="coverage/QNET$purification_speed.coverage" NAME="purification_speed Coverage Results" MODIFIED="1591080820001" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
+    <SUITE FILE_PATH="coverage/QNET$swap_reduce.coverage" NAME="swap_reduce Coverage Results" MODIFIED="1591937010437" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
     <SUITE FILE_PATH="coverage/QNET$scratch.coverage" NAME="shortest_path_test Coverage Results" MODIFIED="1589955117488" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
     <SUITE FILE_PATH="coverage/QNET$Lattice_test.coverage" NAME="Lattice_test Coverage Results" MODIFIED="1590223179945" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
     <SUITE FILE_PATH="coverage/QNET$scratch_3.coverage" NAME="scratch_3 Coverage Results" MODIFIED="1589596876582" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
     <SUITE FILE_PATH="coverage/QNET$quick_test.coverage" NAME="quick_test Coverage Results" MODIFIED="1587463959744" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/QNET$cost_vector_test.coverage" NAME="cost_vector_test Coverage Results" MODIFIED="1590194237139" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
+    <SUITE FILE_PATH="coverage/QNET$PercolationTest.coverage" NAME="PercolationTest Coverage Results" MODIFIED="1590982230534" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/QNET$path_cost_test.coverage" NAME="path_cost_test Coverage Results" MODIFIED="1590203240959" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
+    <SUITE FILE_PATH="coverage/QNET$Graph2.coverage" NAME="Graph2 Coverage Results" MODIFIED="1592098135749" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/QNET$bi_purify_test.coverage" NAME="bi_purify_test Coverage Results" MODIFIED="1589608887293" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
+    <SUITE FILE_PATH="coverage/QNET$SatelliteTrajectory.coverage" NAME="SatelliteTrajectory Coverage Results" MODIFIED="1590803769575" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/QNET$scratch_1.coverage" NAME="scratch_1 Coverage Results" MODIFIED="1587607634581" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
+    <SUITE FILE_PATH="coverage/QNET$Demo.coverage" NAME="Demo Coverage Results" MODIFIED="1590209577984" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/QNET$SimFuncTests.coverage" NAME="SimFuncTests Coverage Results" MODIFIED="1590209552782" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
+    <SUITE FILE_PATH="coverage/QNET$path_gen_test.coverage" NAME="path_gen_test Coverage Results" MODIFIED="1591679539607" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
     <SUITE FILE_PATH="coverage/QNET$Percolation_scratch.coverage" NAME="Percolation_scratch Coverage Results" MODIFIED="1590223444272" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
     <SUITE FILE_PATH="coverage/QNET$LinearGenerator_test.coverage" NAME="LinearGenerator_test Coverage Results" MODIFIED="1589610392709" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
-    <SUITE FILE_PATH="coverage/QNET$PercolationTest.coverage" NAME="PercolationTest Coverage Results" MODIFIED="1590227613967" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/QNET$path_cost_test.coverage" NAME="path_cost_test Coverage Results" MODIFIED="1590203240959" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
+    <SUITE FILE_PATH="coverage/QNET$Swapper.coverage" NAME="Swapper Coverage Results" MODIFIED="1591230978978" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
   </component>
 </project>

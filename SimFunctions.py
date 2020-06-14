@@ -11,7 +11,8 @@ import copy
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import art3d
-from mpl_toolkits.basemap import Basemap
+# Depreciated
+#from mpl_toolkits.basemap import Basemap
 
 
 def getTimeArr(tMax, dt):
@@ -121,7 +122,8 @@ def getCostArrays(G, sourceName, targetName, costType, tMax, dt):
     for path in pathArr:
         for node in path.node_array:
             if isinstance(node, QNET.Satellite):
-                node.setTime()
+                if node.cartesian is False:
+                    node.setTime()
                 
     return pathDict
 
@@ -190,7 +192,8 @@ def getOptimalCostArray(G, sourceName, targetName, costType, tMax, dt, with_puri
     for path in pathArr:
         for node in path.node_array:
             if isinstance(node, QNET.Satellite):
-                node.setTime()        
+                if node.cartesian is False:
+                    node.setTime()
     
     return costArr
 

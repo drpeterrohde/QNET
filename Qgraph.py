@@ -26,17 +26,33 @@ class Qnet(nx.Graph):
     def __str__(self):
 
         qnodes = ""
-        for node in self.nodes():
-            qnodes += node.name + " -- Costs: " + str(node.costs)
-            qnodes += "\n"
+        if len(self.nodes()) == 0:
+            qnodes += "None\n"
+        else:
+            for node in self.nodes():
+                qnodes += "Name: " + "\"" + node.name + "\"" + '\n'\
+                    + str(type(node)) + '\n'\
+                    + "Coordinates: " + str(node.coords) + '\n'\
+                    + "Costs: " + str(node.costs) + '\n'\
+
+                if isinstance(node, QNET.Satellite):
+                    qnodes += "Cartesian == " + str(node.cartesian) + '\n'
+                    if node.cartesian == True:
+                        qnodes += "Velocity == " + str(node.velocity) + '\n'
+
+                qnodes += "\n"
 
         qchans = ""
-        for chan in self.edges():
-            edge_data = self.get_edge_data(chan[0], chan[1])
-            qchans += str(chan[0].name + " <--> " + chan[1].name + " -- Costs: " + str(edge_data))
-            qchans += "\n"
+        if len(self.edges()) == 0:
+            qchans += "None\n"
+        else:
+            for chan in self.edges():
+                edge_data = self.get_edge_data(chan[0], chan[1])
+                qchans += str(chan[0].name + " <--> " + chan[1].name + '\n' +
+                              "Costs: " + str(edge_data))
+                qchans += "\n"
 
-        return (f"Qnodes:\n{qnodes}\nQchans:\n{qchans}")
+        return (f"\n-- Qnodes --\n\n{qnodes}-- Qchans --\n{qchans}")
 
     ### QNET functions ###
     def add_qnode(self, qnode_type=None, **kwargs):
@@ -201,18 +217,22 @@ class Qnet(nx.Graph):
                     self.remove_edge(s, n)
                     self.add_qchan(edge = [s.name, n.name], e=new_e, p=new_p)
 
-    def purify(self, sourceName, targetName):
+    def purify(self, sourceName, targetName, method = "path_disjoint"):
         """
-        Parameters
-        ----------
-        sourceName : str
-            Name of source node
-        targetName : str
-            Name of destination node
-        Returns
-        -------
-        int
-            Purified cost of the network from source to target
+        This function performs a multi-path entanglement purification between a source and target node using all
+        available paths.
+
+        :param str sourceName: Name of source node
+        :param targetName: Name of target node
+        :param string, optional (default = "edge_disjoint"), method: The method used to do the purification.
+        Supported options: "edge_disjoint", "node_disjoint", "total_disjoint", "greedy".
+            edge_disjoint: No intersecting edges
+            node_disjoint: No intersecting nodes
+            total_disjoint: No intersecting edges or nodes
+            greedy:  
+        Other inputs produce a ValueError
+        :return: float
+
         """
 
         def fidTransform(F1, F2):
@@ -221,7 +241,9 @@ class Qnet(nx.Graph):
         # Get paths for Graph
         u = self.getNode(sourceName)
         v = self.getNode(targetName)
-        generator = nx.all_simple_paths(self, u, v)
+
+        # TODO: Test this fix
+        generator = nx.node_disjoint_paths(self, u, v)
 
         # Get p values for each path
         p_arr = []

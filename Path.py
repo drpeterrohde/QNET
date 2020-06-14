@@ -64,8 +64,12 @@ class Path:
 
     def cost(self, costType):
         """
+        Calculate the cost of the path for a given costType.
+        If calculating efficiency, does not take into account cost due to swapper node.
+
         Calculate the cost of the path for a given cost type
         :param str costType:
+        :param str exclude: Node type to exclude from path length
         :return: cost
         """
 
