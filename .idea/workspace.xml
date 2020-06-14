@@ -3,16 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="e84bdf82-fe58-45b5-b532-1e191725560c" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.ipynb_checkpoints/Untitled-checkpoint.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Demo.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Demo.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ExampleCode.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/ExampleCode.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MonteCarlo.py" beforeDir="false" afterPath="$PROJECT_DIR$/MonteCarlo.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Node.py" beforeDir="false" afterPath="$PROJECT_DIR$/Node.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Path.py" beforeDir="false" afterPath="$PROJECT_DIR$/Path.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PercolationTest.py" beforeDir="false" afterPath="$PROJECT_DIR$/PercolationTest.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Qgraph.py" beforeDir="false" afterPath="$PROJECT_DIR$/Qgraph.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/SimFunctions.py" beforeDir="false" afterPath="$PROJECT_DIR$/SimFunctions.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Utilities.py" beforeDir="false" afterPath="$PROJECT_DIR$/Utilities.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -231,7 +223,7 @@
       <workItem from="1591699933799" duration="3050000" />
       <workItem from="1591850890094" duration="2984000" />
       <workItem from="1591926373452" duration="7553000" />
-      <workItem from="1592088321425" duration="7008000" />
+      <workItem from="1592088321425" duration="10721000" />
     </task>
     <task id="LOCAL-00001" summary="First time committing from PyCharm.&#10;Including tester file for 3d visualisation tools I want to use in jupyter notebook and also including live_demo file for Deepesh">
       <created>1587466301996</created>
@@ -268,7 +260,14 @@
       <option name="project" value="LOCAL" />
       <updated>1590228000945</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="+ Wrote linear_swap_reduce in Utilities.py&#10;+ Instantiated Satellite class with optional cartesian attribute&#10;&#10;TODO:&#10;&#10;- Fix globals in Satellite class&#10;- getPathCosts in SimFunctions.py no longer working&#10;- PlotSatTrajectory has an undefined variable">
+      <created>1592104502464</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1592104502464</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -279,7 +278,8 @@
     <MESSAGE value="+ All relevant costs added in __init__ for qnodes and qchans&#10;+ Specific kwargs given for qnodes for better docstrings&#10;+ Cleaned up Purify&#10;+ Created QNET.get_shortest_path_cost to handle situations the nx.shortest_path couldn't.&#10;+ Added Path.is_valid()" />
     <MESSAGE value="+ Fixed bug in add_qchan where 'e' = 1 was always being initialized&#10;+ Updated airCost so it returns [e, p]&#10;+ Updated make_cost_vector so if p != 1, pz = 1 - p&#10;+ Updated make_qchan so that Satellite airCosts are initialized." />
     <MESSAGE value="+ Fixed QNET.shortest_path_cost&#10;+ Fixed QNET.path_cost&#10;+ Created QNET.plot_2d&#10;&#10;TODO:&#10;- Fix satellite channels&#10;- Find out why p &lt; 0.5 messes up in PercolationTest.py" />
-    <option name="LAST_COMMIT_MESSAGE" value="+ Fixed QNET.shortest_path_cost&#10;+ Fixed QNET.path_cost&#10;+ Created QNET.plot_2d&#10;&#10;TODO:&#10;- Fix satellite channels&#10;- Find out why p &lt; 0.5 messes up in PercolationTest.py" />
+    <MESSAGE value="+ Wrote linear_swap_reduce in Utilities.py&#10;+ Instantiated Satellite class with optional cartesian attribute&#10;&#10;TODO:&#10;&#10;- Fix globals in Satellite class&#10;- getPathCosts in SimFunctions.py no longer working&#10;- PlotSatTrajectory has an undefined variable" />
+    <option name="LAST_COMMIT_MESSAGE" value="+ Wrote linear_swap_reduce in Utilities.py&#10;+ Instantiated Satellite class with optional cartesian attribute&#10;&#10;TODO:&#10;&#10;- Fix globals in Satellite class&#10;- getPathCosts in SimFunctions.py no longer working&#10;- PlotSatTrajectory has an undefined variable" />
   </component>
   <component name="WindowStateProjectService">
     <state x="453" y="211" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1587532609739">
@@ -290,10 +290,10 @@
       <screen x="70" y="27" width="1850" height="1053" />
     </state>
     <state x="839" y="183" width="591" height="403" key="#com.intellij.fileTypes.FileTypeChooser/70.27.1850.1053@70.27.1850.1053" timestamp="1591230787681" />
-    <state x="416" y="98" width="912" height="612" key="CommitChangelistDialog2" timestamp="1590228000756">
+    <state x="975" y="27" width="912" height="612" key="CommitChangelistDialog2" timestamp="1592104502223">
       <screen x="70" y="27" width="1850" height="1053" />
     </state>
-    <state x="416" y="98" width="912" height="612" key="CommitChangelistDialog2/70.27.1850.1053@70.27.1850.1053" timestamp="1590228000756" />
+    <state x="975" y="27" width="912" height="612" key="CommitChangelistDialog2/70.27.1850.1053@70.27.1850.1053" timestamp="1592104502223" />
     <state x="159" y="273" width="1480" height="879" key="DiffContextDialog" timestamp="1587466206477">
       <screen x="70" y="27" width="1850" height="1053" />
     </state>
@@ -346,10 +346,10 @@
       <screen x="70" y="27" width="1850" height="1053" />
     </state>
     <state x="177" y="65" width="1548" height="874" key="SettingsEditor/70.27.1850.1053@70.27.1850.1053" timestamp="1589149808779" />
-    <state x="587" y="161" width="1074" height="792" key="Vcs.Push.Dialog.v2" timestamp="1590228031709">
+    <state x="587" y="161" width="1074" height="792" key="Vcs.Push.Dialog.v2" timestamp="1592104541877">
       <screen x="70" y="27" width="1850" height="1053" />
     </state>
-    <state x="587" y="161" width="1074" height="792" key="Vcs.Push.Dialog.v2/70.27.1850.1053@70.27.1850.1053" timestamp="1590228031709" />
+    <state x="587" y="161" width="1074" height="792" key="Vcs.Push.Dialog.v2/70.27.1850.1053@70.27.1850.1053" timestamp="1592104541877" />
     <state x="766" y="468" width="458" height="177" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1591850904453">
       <screen x="70" y="27" width="1850" height="1053" />
     </state>

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on Fri Feb 28 17:25:13 2020
-@author: hudson
+@author: Hudson Leone
 """
 
 import networkx as nx

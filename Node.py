@@ -3,7 +3,7 @@
 """
 Created on Mon May 25 18:48:05 2020
 
-@author: deepeshsingh
+@author: Hudson Leone and Deepesh Singh
 """
 
 import QNET
@@ -15,13 +15,13 @@ import warnings
 from skyfield.api import EarthSatellite
 from skyfield.api import Topos, load
 
+
 class Qnode:
     """
     Default Qnode Class
     """
 
-########## MAGICS ##########
-    def __init__(self, name = None, coords = [0]*3, e = 1, p = 1, px = 0, py = 0, pz = 0, **kwargs):
+    def __init__(self, name=None, coords=[0] * 3, e=1, p=1, px=0, py=0, pz=0, **kwargs):
         """
         Qnode Initialization
         :param str name: Name of Qnode
@@ -45,12 +45,12 @@ class Qnode:
         # Initialize cost vector
         costs = QNET.make_cost_vector(e, p, px, py, pz, **kwargs)
         self.costs = costs
-        
+
     def __str__(self):
         return self.name
         # Formerly:
         # Qnode.name: ' + self.name + " -- " + "Coords:" + str(self.coords) + " -- " + str(type(self))
-    
+
     def __repr__(self):
         return self.name
         # Possible add on:
@@ -60,13 +60,13 @@ class Qnode:
         try:
             val = self.costs[costType]
         except:
-            assert(False), f"\"{costType}\" is not a cost or attribute of \"{self.name}\"."
+            assert (False), f"\"{costType}\" is not a cost or attribute of \"{self.name}\"."
 
 
 # SUB CLASSES
 
 class Ground(Qnode):
-    def __init__(self, name = None, coords = [0]*3, e = 1, p = 1, px = 0, py = 0, pz = 0, **kwargs):
+    def __init__(self, name=None, coords=[0] * 3, e=1, p=1, px=0, py=0, pz=0, **kwargs):
         """
         Ground Node initialization
         :param str name: Name of Qnode
@@ -79,10 +79,10 @@ class Ground(Qnode):
         :param float kwargs: Other costs or qualifying attributes
         """
         super().__init__(name, coords, e, p, px, py, pz, **kwargs)
-        
 
-class Satellite(Qnode):    
-    def __init__(self, name=None, coords=[0,0,0], e=1, p=1, px=0, py=0, pz=0, t=0, v_cart=[0, 0], line1=None,
+
+class Satellite(Qnode):
+    def __init__(self, name=None, coords=[0, 0, 0], e=1, p=1, px=0, py=0, pz=0, t=0, v_cart=[0, 0], line1=None,
                  line2=None, cartesian=True, **kwargs):
         """
         Intialises the satellite class. If cartesian == True, satellite coordinates will be cartesian and  it will
@@ -130,17 +130,10 @@ class Satellite(Qnode):
             super().__init__(name, coords, e, p, px, py, pz, **kwargs)
 
         else:
-            # TODO: Figure out where globals should go?
-            global ts
-            global t_now
-            global t_startTime
-            global t_new
-            global satellite
-
             ## Define the time at which the satellite is being tracked ##
             ts = load.timescale()
             t_now = ts.now()
-            t_startTime = ts.utc(t_now.utc[0], t_now.utc[1], t_now.utc[2], t_now.utc[3], t_now.utc[4], t_now.utc[5]+t)
+            t_startTime = ts.utc(t_now.utc[0], t_now.utc[1], t_now.utc[2], t_now.utc[3], t_now.utc[4], t_now.utc[5] + t)
             t_new = t_startTime
 
             ## Initialise which satellite to track. Default is ISS Zarya ##
@@ -148,7 +141,8 @@ class Satellite(Qnode):
                 satellite = EarthSatellite(line1, line2, self.name, ts)
                 geometry = satellite.at(t_new)
                 subpoint = geometry.subpoint()
-                self.coords = [int(subpoint.latitude.degrees), int(subpoint.longitude.degrees), int(subpoint.elevation.km)]
+                self.coords = [int(subpoint.latitude.degrees), int(subpoint.longitude.degrees),
+                               int(subpoint.elevation.km)]
             except:
                 # Add ISS Zarya to the network by default if the given TLE is invalid
                 # l1 and l2 are TLE of ISS Zarya
@@ -157,8 +151,17 @@ class Satellite(Qnode):
                 satellite = EarthSatellite(l1, l2, self.name, ts)
                 geometry = satellite.at(t_new)
                 subpoint = geometry.subpoint()
-                geo_coords = [int(subpoint.latitude.degrees), int(subpoint.longitude.degrees), int(subpoint.elevation.km)]
+                geo_coords = [int(subpoint.latitude.degrees), int(subpoint.longitude.degrees),
+                              int(subpoint.elevation.km)]
                 super().__init__(name, geo_coords, e, p, px, py, pz, **kwargs)
+
+            # TODO: Write descriptions for these variables here
+            self.ts = ts
+            self.t_now = t_now
+            self.t_startTime = t_startTime
+            self.t_new = t_new
+            self.satellite = satellite
+            super().__init__(name, coords, e, p, px, py, pz, **kwargs)
 
             print(t_now.utc)
 
@@ -169,17 +172,14 @@ class Satellite(Qnode):
             self.coords = [self.coords[0] + vx * dt, self.coords[1] + vy * dt, self.coords[2]]
 
         else:
-            # TODO: Figure out where globals should go?
-            global ts
-            global t_new
-            global sums
-            t_new = ts.utc(t_new.utc[0], t_new.utc[1], t_new.utc[2], t_new.utc[3], t_new.utc[4], t_new.utc[5]+dt)
-            geometry = satellite.at(t_new)
+            self.t_new = self.ts.utc(self.t_new.utc[0], self.t_new.utc[1], self.t_new.utc[2], self.t_new.utc[3],
+                                     self.t_new.utc[4], self.t_new.utc[5] + dt)
+            geometry = self.satellite.at(self.t_new)
             subpoint = geometry.subpoint()
             self.coords = [int(subpoint.latitude.degrees), int(subpoint.longitude.degrees), int(subpoint.elevation.km)]
-        
+
         return
-    
+
     def setTime(self):
         '''
         Restart tracking the satellite. 
@@ -191,26 +191,27 @@ class Satellite(Qnode):
         None.
 
         '''
-        global t_startTime
-        global t_new
-        t_new = t_startTime
-        
+        self.t_new = self.t_startTime
         return
 
     def cart_distance(self, node):
         sx, sy, sz = self.coords
         x, y, z = node.coords
-        return np.sqrt((x-sx)**2 + (y-sy)**2 + (z-sz)**2)
-    
+        return np.sqrt((x - sx) ** 2 + (y - sy) ** 2 + (z - sz) ** 2)
+
     def distance(self, node):
-        global t_new        
-        node_location = Topos(float(node.coords[0]), float(node.coords[1]))
-        difference = satellite - node_location
-        topocentric = difference.at(t_new)
-        alt, az, distMagnitude = topocentric.altaz()
-        
-        return int(distMagnitude.km/1000)
-        
+        if self.cartesian is True:
+            sx, sy, sz = self.coords
+            x, y, z = node.coords
+            return np.sqrt((x - sx) ** 2 + (y - sy) ** 2 + (z - sz) ** 2)
+
+        else:
+            node_location = Topos(float(node.coords[0]), float(node.coords[1]))
+            difference = self.satellite - node_location
+            topocentric = difference.at(self.t_new)
+            alt, az, distMagnitude = topocentric.altaz()
+            return int(distMagnitude.km / 1000)
+
     def airCost(self, node):
         """
         :param Qnode() node: The target node for the satellite communication
@@ -229,19 +230,19 @@ class Satellite(Qnode):
             dist = self.cart_distance(node)
             # Difference in altitude
             dz = self.coords[2] - node.coords[2]
-            assert(dz > 0), f"Satellite altitude [{self.coords[2]}] must be greater than node altitude. [{node.coords[2]}]"
+            assert (
+                        dz > 0), f"Satellite altitude [{self.coords[2]}] must be greater than node altitude. [{node.coords[2]}]"
             # Altitude angle
-            theta = np.arcsin(dz/dist)
+            theta = np.arcsin(dz / dist)
 
         else:
-            global t_new
             node_location = Topos(float(node.coords[0]), float(node.coords[1]))
-            difference = satellite - node_location
-            topocentric = difference.at(t_new)
+            difference = self.satellite - node_location
+            topocentric = difference.at(self.t_new)
             alt, az, dist1 = topocentric.altaz()
             theta = alt.degrees
             dist = self.distance(node)
-            
+
         """
         Line integral for effective density
             
@@ -249,19 +250,19 @@ class Satellite(Qnode):
          |     rho(L * sin(theta)) dL
         /   0
         """
-            
+
         def rho(L, theta):
-            
+
             # From altitude, calculate pressure
             # Assume T = 288.15K and 0% humidity
             P = atmosphere.alt2pres(L * np.sin(theta))
             T = 288.15
-            R = 287.058 # Specific gas constant of air
+            R = 287.058  # Specific gas constant of air
             return P / (R * T)
-            
+
         # Perform numerical integration to get effective density (?)
-        #d = scipy.integrate.quad(rho, 0, int(dist.km/1000), args = (theta))[0]
-        d = scipy.integrate.quad(rho, 0, dist, args = (theta))[0]
+        # d = scipy.integrate.quad(rho, 0, int(dist.km/1000), args = (theta))[0]
+        d = scipy.integrate.quad(rho, 0, dist, args=(theta))[0]
 
         # TODO:
         """
@@ -290,7 +291,6 @@ class Satellite(Qnode):
             # Attenuation coefficient
             K = 0.01
             return QNET.convert(d * K, 'linear')
-        
 
         ## Check if satellite is above the horizon before making an edge ##
         '''
@@ -299,15 +299,15 @@ class Satellite(Qnode):
         else:
             results = [0,0]
         '''
-        
+
         results = [transmission_probability(d), phasing_probability(d)]
-        
+
         return results
 
-     
-class Swapper(Qnode):   
+
+class Swapper(Qnode):
     # prob is probability of succesful swapping between nodes
-    def __init__(self, name = None, coords = [0]*3, e = 0.5, p = 1, px = 0, py = 0, pz = 0, **kwargs):
+    def __init__(self, name=None, coords=[0] * 3, e=0.5, p=1, px=0, py=0, pz=0, **kwargs):
         """
         Swapper node initialization (Notice that "e" defaults to 0.5)
         :param str name: Name of Qnode
@@ -321,8 +321,9 @@ class Swapper(Qnode):
         """
         super().__init__(name, coords, e, p, px, py, pz, **kwargs)
 
+
 class PBS(Swapper):
-    def __init__(self, name = None, coords = [0]*3, e = 0.5, p = 1, px = 0, py = 0, pz = 0, **kwargs):
+    def __init__(self, name=None, coords=[0] * 3, e=0.5, p=1, px=0, py=0, pz=0, **kwargs):
         """
         Polarizing Beam Splitter Swapper node initialization (Notice that "e" defaults to 0.5)
         :param str name: Name of Qnode
@@ -334,11 +335,12 @@ class PBS(Swapper):
         :param float pz: Probability of z-flip (Dephasing)
         :param float kwargs: Other costs or qualifying attributes
         """
-        assert(e <= 0.5), "Type \"PBS\" cannot have \"e\" value greater than 0.5."
+        assert (e <= 0.5), "Type \"PBS\" cannot have \"e\" value greater than 0.5."
         super().__init__(name, coords, e, p, px, py, pz, **kwargs)
 
+
 class CNOT(Swapper):
-    def __init__(self, name = None, coords = [0]*3, e = 0.5, p = 1, px = 0, py = 0, pz = 0, **kwargs):
+    def __init__(self, name=None, coords=[0] * 3, e=0.5, p=1, px=0, py=0, pz=0, **kwargs):
         """
         Polarizing Beam Splitter Swapper node initialization (Notice that "e" defaults to 0.5)
         :param str name: Name of Qnode
@@ -351,4 +353,3 @@ class CNOT(Swapper):
         :param float kwargs: Other costs or qualifying attributes
         """
         super().__init__(name, coords, e, p, px, py, pz, **kwargs)
-    
