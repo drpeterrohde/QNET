@@ -27,13 +27,13 @@ BG4 = 0.25
 BG5 = 0.40
 
 # INITIALIZE NODES AND EDGES
-nbunch = [{'name':'A'},
-          {'name':'B'},
-          {'name':'G1', 'qnode_type': 'Ground'},
-          {'name':'G2', 'qnode_type': 'Ground'},
-          {'name':'G3', 'qnode_type': 'Ground'},
-          {'name':'G4', 'qnode_type': 'Ground'},
-          {'name':'G5', 'qnode_type': 'Ground'},
+nbunch = [{'name':'A', 'coords': [0, 50, 0], 'p':0.9},
+          {'name':'B', 'coords': [100, 50, 0], 'p':0.9},
+          {'name':'G1', 'qnode_type': 'Ground', 'coords': [50, 10, 0], 'p':0.8},
+          {'name':'G2', 'qnode_type': 'Ground', 'coords': [50, 30, 0], 'p':0.6},
+          {'name':'G3', 'qnode_type': 'Ground', 'coords': [50, 50, 0], 'p':0.4},
+          {'name':'G4', 'qnode_type': 'Ground', 'coords': [50, 70, 0], 'p':0.95},
+          {'name':'G5', 'qnode_type': 'Ground', 'coords': [50, 90, 0], 'p':0.7},
           ]
 
 ebunch = [{'edge': ('A', 'G1'), 'pz': AG1},

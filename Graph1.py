@@ -32,13 +32,13 @@ X = QNET.Qnet()
 Qnodes = [{'name': 'A', 'coords': posA},
           {'name': 'B', 'coords': posB},
           {'name': 'G', 'qnode_type':'Ground', 'coords': posG},
-          {'name': 'S', 'qnode_type':'Satellite', 'coords': posS, 'velocity':vsat, 'range':range},
+          {'name': 'S', 'qnode_type':'Satellite', 'coords': posS, 'v_cart':vsat, 'range':range},
           ]
 
 X.add_qnodes_from(Qnodes)
 
-Qchans = [{'edge':('A','G'),'pz':AG_pz},
-          {'edge':('G','B'),'pz':GB_pz},
+Qchans = [{'edge':('A','G'),'e':0.4, 'pz':AG_pz},
+          {'edge':('G','B'),'e':0.4, 'pz':GB_pz},
           {'edge':('A','S')},
           {'edge':('B','S')},
           ]

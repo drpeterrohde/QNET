@@ -7,9 +7,6 @@ Created on Tue Mar 24 17:22:47 2020
 
 import networkx as nx
 import QNET
-import numpy as np
-import copy
-import warnings
 
 typeDict = {'Ground': QNET.Ground,
             'Satellite': QNET.Satellite,
@@ -54,52 +51,55 @@ class Qnet(nx.Graph):
 
         return (f"\n-- Qnodes --\n\n{qnodes}-- Qchans --\n{qchans}")
 
-    ### QNET functions ###
     def add_qnode(self, qnode_type=None, **kwargs):
         """
-        Initialize a qnode of some type and add it to the grah
+        Initialize a qnode of some type and add it to the graph
         :param str qnode_type: qnode subclass
         :param kwargs: Keyword arguments needed to initialize the qnode
         :return: None
         """
 
-        # Check that arguments exist
-        assert len(kwargs) > 0
-
-        # If type is specified, initialize qnode of that type
-        if qnode_type != None:
-            # Check if qnode_type is valid
-            assert (qnode_type in typeDict), f"Unsupported qnode type: \'{qnode_type}\'"
-            newNode = typeDict[qnode_type](**kwargs)
-
-            # TODO: Add additional cost vector dict?
-            self.add_node(newNode, **newNode.costs)
-
-        # Else, initialize default qnode
+        # if qnode_type is None, initialize as the default type.
+        if qnode_type is None:
+            new_node = QNET.Qnode(**kwargs)
+            old_node = self.getNode(new_node.name)
+            if old_node is None:
+                self.add_node(new_node)
+            else:
+                old_node.update(kwargs)
         else:
-            newNode = QNET.Qnode(**kwargs)
-            self.add_node(newNode)
+            # Check if type is valid
+            assert (qnode_type in typeDict), f"Unsupported qnode type: \'{qnode_type}\'"
+            new_node = typeDict[qnode_type](**kwargs)
+            old_node = self.getNode(new_node.name)
+            if old_node is None:
+                self.add_node(new_node)
+            else:
+                self.update_qnode(old_node, **kwargs)
 
-    # Convert array of tuples into Qnode objects and add to graph
-    # First arguement is class. If class is unspecified, node will be regular qnode
     def add_qnodes_from(self, nbunch):
         """
-        Initialize list of qnodes and adds them to a graph
-        
-        Parameters
-        __________
-        nbunch: array
-            Array of dictionaries with qnode attributes as key-value pairs
-            
-        
+        Add qnodes from a dictionary.
+        :param nbunch: Dictionary of nodes
+        :return: None
         """
         for data in nbunch:
             self.add_qnode(**data)
 
-    def add_qchan(self, edge=None, e=1, p=1, px=0, py=0, pz=0, **kwargs):
+    def remove_qnode(self, qnode):
+        qnode = self.getNode(qnode)
+        assert qnode is not None
+        self.remove_node(qnode)
+
+    def remove_qnodes_from(self, nbunch):
+        for data in nbunch:
+            self.remove_qnode(data)
+
+    def add_qchan(self, edge=None, e=1, p=1, **kwargs):
         """
         Add a Qchan to the graph. If either of the node types are Satellites, the airCosts
         will be automatically calculated from current positions and added to the cost array.
+
         :param list edge: Array-like object of two qnodes to be connected
         :param float e: Proportion of photons that pass through the channel
         :param float p: Proportion of surviving photons that haven't changed state
@@ -114,8 +114,15 @@ class Qnet(nx.Graph):
         assert (edge != None), "\'edge\' must be an array-like object of two qnodes"
         assert (len(edge) == 2), "\'edge\' must be an array-like object of two qnodes"
 
-        u = self.getNode(edge[0])
-        v = self.getNode(edge[1])
+        u = self.getNode(str(edge[0]))
+        v = self.getNode(str(edge[1]))
+
+        if u is None:
+            u = QNET.Ground(name=str(edge[0]))
+            self.add_node(u)
+        if v is None:
+            v = QNET.Ground(name=str(edge[1]))
+            self.add_node(v)
 
         # If either of the nodes are satellites, get air costs
         if isinstance(u, QNET.Satellite):
@@ -123,7 +130,7 @@ class Qnet(nx.Graph):
         elif isinstance(v, QNET.Satellite):
             e, p = v.airCost(u)
 
-        cost_vector = QNET.make_cost_vector(e, p, px, py, pz, **kwargs)
+        cost_vector = QNET.make_cost_vector(e, p, **kwargs)
         self.add_edge(u, v, **cost_vector)
 
     def add_qchans_from(self, cbunch):
@@ -137,41 +144,21 @@ class Qnet(nx.Graph):
         -------
         None.
         """
-
         for edge in cbunch:
             self.add_qchan(**edge)
 
-    # Might be outmoded by for edge in G.edges() print edge
-    def print_qchans(self):
+    def getNode(self, node_name):
         """
-        Print every channel in the qnet graph
-        Returns
-        -------
-        None.
+        This function returns a node of a given name. If no such node exists, returns None.
+        :param node_name: Name of node
+        :return: Node
         """
-        for chan in self.edges():
-            # get costs:
-            edge_data = self.get_edge_data(chan[0], chan[1])
-            print(chan[0].name + " <--> " + chan[1].name + " -- Costs: " + str(edge_data))
-
-    # Given a nodeName and a graph, returns node
-    def getNode(self, nodeName):
-        """
-        Returns a qnode object with a given name. Assumes uniqueness
-        Parameters
-        ----------
-        nodeName : TYPE
-            DESCRIPTION.
-        Returns
-        -------
-        node : qnode
-            qnode with matching name
-        """
+        if isinstance(node_name, QNET.Qnode):
+            return node_name
         for node in self.nodes():
-            if node.name == nodeName:
+            if node.name == node_name:
                 return node
-        # else
-        assert False, f"Node \"{nodeName}\" not found in graph."
+        return None
 
     def update(self, dt):
         """
@@ -216,63 +203,6 @@ class Qnet(nx.Graph):
                     # Update edge
                     self.remove_edge(s, n)
                     self.add_qchan(edge = [s.name, n.name], e=new_e, p=new_p)
-
-    def purify(self, sourceName, targetName, method = "path_disjoint"):
-        """
-        This function performs a multi-path entanglement purification between a source and target node using all
-        available paths.
-
-        :param str sourceName: Name of source node
-        :param targetName: Name of target node
-        :param string, optional (default = "edge_disjoint"), method: The method used to do the purification.
-        Supported options: "edge_disjoint", "node_disjoint", "total_disjoint", "greedy".
-            edge_disjoint: No intersecting edges
-            node_disjoint: No intersecting nodes
-            total_disjoint: No intersecting edges or nodes
-            greedy:  
-        Other inputs produce a ValueError
-        :return: float
-
-        """
-
-        def fidTransform(F1, F2):
-            return (F1 * F2) / (F1 * F2 + (1 - F1) * (1 - F2))
-
-        # Get paths for Graph
-        u = self.getNode(sourceName)
-        v = self.getNode(targetName)
-
-        # TODO: Test this fix
-        generator = nx.node_disjoint_paths(self, u, v)
-
-        # Get p values for each path
-        p_arr = []
-        for path in generator:
-            new_path = QNET.Path(self, path)
-            # check if path is valid
-            if new_path.is_valid() == True:
-                p = new_path.cost('p')
-                p_arr.append(p)
-            else:
-                pass
-
-        assert (len(p_arr) != 0), f"No path exists from {sourceName} to {targetName}"
-
-        # Initialize purified fidelity as the max fidelity value
-        pure_cost = max(p_arr)
-        p_arr.remove(pure_cost)
-
-        # Purify fidelities together
-        # TODO: Depreciate this code
-        while (len(p_arr) != 0):
-            pmax = max(p_arr)
-            if pmax > 0.5:
-                pure_cost = fidTransform(pure_cost, pmax)
-            elif pmax <= 0.5:
-                break
-            p_arr.remove(pmax)
-
-        return pure_cost
 
     # TODO Test this:
     def bi_purify(self, path1, path2, costType):

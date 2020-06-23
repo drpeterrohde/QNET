@@ -13,13 +13,6 @@ import QNET
 
 X = QNET.Qnet()
 
-# STATIC CHANNEL COSTS
-# Loss of 0.05 corresponds to ~95% success probability
-# 0.20 ~ 80% success probability
-# 0.69 ~ 50% success probability
-
-# Any path below 50% success probability should __NOT__ be purified
-
 lossAG1 = 0.10
 lossAG2 = 0.20
 lossAG3 = 0.40

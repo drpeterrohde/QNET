@@ -23,18 +23,6 @@ from Graph4 import X as X4
 
 import matplotlib.pyplot as plt
 
-
-##### DEMO FUNCTIONS #####
-
-def printGraph(G):
-    print("Nodes:")
-    for node in G.nodes():
-        print(node)
-    print('\n')
-    print("Channels")
-    G.print_qchans()
-    print('\n')
-
 def plotPaths(G, sourceName, targetName, costType, tMax, dt):
     
     # Get Time Array

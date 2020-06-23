@@ -11,8 +11,6 @@ import copy
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import art3d
-# Depreciated
-#from mpl_toolkits.basemap import Basemap
 
 
 def getTimeArr(tMax, dt):
@@ -48,6 +46,9 @@ def getCostArr(path, costType, tMax, dt):
     -------
     costArr : array
     """
+
+    # TODO: This function is not working at all
+
     costArr = []
     sizeArr = len(np.arange(0,tMax,dt))
     i = 0
@@ -58,7 +59,8 @@ def getCostArr(path, costType, tMax, dt):
         
     for node in path.node_array:
         if isinstance(node, QNET.Satellite):
-            node.setTime()
+            if node.cartesian is False:
+                node.setTime()
         
     return costArr
     
@@ -127,64 +129,38 @@ def getCostArrays(G, sourceName, targetName, costType, tMax, dt):
                 
     return pathDict
 
-def getOptimalCostArray(G, sourceName, targetName, costType, tMax, dt, with_purification = True):
+def optimal_cost_array(G, source_name, target_name, cost_type, tMax, dt):
     """
     Calculate the costs of the lowest cost path from "source" to "target" over time.
-    The user also has the option to consider whether or not the optimal cost comparison includes
-    mutli-path purification.
-    Parameters
-    ----------
-    G : Qnet()
-        Qnet graph
-    sourceName : str
-        Name of source node
-    targetName : str
-        Name of target node
-    costType : str
-        The type of cost you would like to calculate for
-        Choose from {'loss', 'fid'}
-    tMax : float
-        Maximum time period
-    dt : TYPE
-        Time increment
-    Returns
-    -------
-    optLossArr : array
+    :param G: Qnet Graph
+    :param string source_name: Name of source node
+    :param string target_name: Name of target node
+    :param string cost_type: The type of cost to optimise over. Choose from {'loss', 'fid'}
+    :param float tMax: Time period
+    :param float dt: Time increment
+    :return: Optimal loss array
     """
     C = copy.deepcopy(G)
-    
-    u = C.getNode(sourceName)
-    v = C.getNode(targetName)
 
-    assert costType in ['e', 'p'], "Please choose a supported cost type from {'e', 'p'}"
+    u = C.getNode(source_name)
+    v = C.getNode(target_name)
+
+    assert cost_type in ['e', 'p'], "Please choose a supported cost type from {'e', 'p'}"
 
     # Initialize arrays
-    costArr = []
-    sizeArr = len(np.arange(0,tMax,dt))
-    
+    cost_arr = []
+    size = len(np.arange(0, tMax, dt))
+
     # Get optimal path cost and append it to costArr
     i = 0
-    while i < sizeArr:
-        
-        # Get classically shortest path cost
-        cost = QNET.shortest_path_length(C, sourceName, targetName, costType)
-        
-        # Get purified cost
-        pur_cost = C.purify(sourceName, targetName)
-        
-        # Compare costs, add the lower of the two:
-        if with_purification:
-            if cost < pur_cost:
-                costArr.append(cost)
-            else:
-                costArr.append(pur_cost)
-        else:
-            costArr.append(cost)
-        
-        # Update satellites
+    while i < size:
+        cost = QNET.best_path_cost(C, source_name, target_name, cost_type)
+        cost_arr.append(cost)
+        # Update network
         C.update(dt)
         i += 1
-        
+
+    """ 
     simplePathGen = nx.algorithms.simple_paths.all_simple_paths(C, u, v) 
     pathArr = []
     for path in simplePathGen:
@@ -194,8 +170,9 @@ def getOptimalCostArray(G, sourceName, targetName, costType, tMax, dt, with_puri
             if isinstance(node, QNET.Satellite):
                 if node.cartesian is False:
                     node.setTime()
-    
-    return costArr
+    """
+
+    return cost_arr
 
 def getPurifiedArray(G, sourceName, targetName, tMax, dt):
     """
@@ -288,24 +265,66 @@ def posPlot(Q, u, v, tMax, dt):
     plt.show()    
     
 
-def plot_2d(Q):
+def plot_2d(Q, node_label = None, edge_label=None, FOV=('x', 'y')):
+    """
+    Plots a 2d view of a Qnet graph in spatial coordinates of nodes
+    Edge costs listed are rounded to four significant figures
+
+    :param Q: Qnet Graph
+    :param string label: Optional. Cost of edge to be labeled
+    :param strings FOV: Optional. Field of view orientation
+    :return:
+    """
+    # Dictionary of node positions
     pos_dict = {}
+    # Dictionary of node labels
+    node_labels = {}
+    # Dictionary of node positions but offset for labeling
+    offset = {}
+    # Offset for node labeling in y direction
+    y_off = 5
+    # Dictionary of labels for edges
+    edge_labels = {}
+    # Array of colours for nodes
+    node_colours = []
+    # Dictionary between colours and node types
+    colour_dict = {QNET.Qnode: 'r', QNET.Ground: 'y', QNET.Swapper: 'c', QNET.Satellite: 'b'}
+
+    for axes in FOV:
+        assert axes in ('x', 'y', 'z'), "Field of view usage: Two from (\'x\', \'y\', \'z\')."
+    axis_to_index = {'x':0, 'y':1, 'z':2}
+    u = axis_to_index[FOV[0]]
+    v = axis_to_index[FOV[1]]
+
     for node in Q.nodes():
-        pos_dict[node] = [node.coords[0], node.coords[1]]
-    nx.draw_networkx(Q, pos_dict)
+        pos_dict[node] = [node.coords[u], node.coords[v]]
+        node_colours.append(colour_dict[type(node)])
+
+        if node_label is not None:
+            cost = round(node.costs[node_label], 4)
+            node_labels[node] = str(node_label) + ' = ' + str(cost)
+
+            offset[node] = [node.coords[u], node.coords[v] + y_off]
+
+        if edge_label is not None:
+            for nbr in Q.neighbors(node):
+                # If there's no key for the reverse direction case, add edge label (Only one direction needed)
+                if not (nbr, node) in edge_labels:
+                    cost = round(Q.edges[node, nbr][edge_label], 4)
+                    edge_labels[(node, nbr)] = str(edge_label) + ' = ' + str(cost)
+
+    nx.draw_networkx(Q, pos=pos_dict, node_color=node_colours)
+    nx.draw_networkx_labels(Q, pos=offset, labels=node_labels)
+    nx.draw_networkx_edge_labels(Q, pos_dict, edge_labels=edge_labels)
     plt.show()
 
 
 def plot_3d(Q):
     """
-    Produces a static 3d plot of a Qnet graph
+    Draws a 3d plot of a Qnet graph
     Parameters
-    ----------
-    Q : Qnet()
-        Qnet Graph
-    Returns
-    -------
-    None.
+    :param Q: Qnet Graph
+    :return:
     """
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
@@ -317,31 +336,22 @@ def plot_3d(Q):
         x = node.coords[0]
         y = node.coords[1]
         z = node.coords[2]
-        print("inside posPlot", node.name, node.coords)
 
         # Dictionary between colours and node types
         qnode_color = {QNET.Qnode: 'r', QNET.Ground: 'y', QNET.Swapper: 'c', QNET.Satellite: 'b'}
-
         ax.scatter(x, y, z, c=qnode_color[type(node)], marker='o')
         ax.text(x, y, z, '%s' % node.name, size=12, zorder=1)
-
-        # Todo: Figure out how to offset text.
 
     for edge in Q.edges:
         xs = [edge[0].coords[0], edge[1].coords[0]]
         ys = [edge[0].coords[1], edge[1].coords[1]]
         zs = [edge[0].coords[2], edge[1].coords[2]]
-
-        if (isinstance(edge[0], QNET.Satellite) or isinstance(edge[1], QNET.Satellite)):
+        if isinstance(edge[0], QNET.Satellite) or isinstance(edge[1], QNET.Satellite):
             line = art3d.Line3D(xs, ys, zs, linestyle='--')
-
         else:
             line = art3d.Line3D(xs, ys, zs)
-
         ax.add_line(line)
-    
     plt.show(fig)
-    # return fig
     
 def satTrajectory(Q, u, tMax, dt):
     '''

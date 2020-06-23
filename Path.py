@@ -10,45 +10,44 @@ import networkx as nx
 import QNET
 import numpy as np
 
-class Path:
-    
-    def __init__(self, G, array):
 
+class Path:
+
+    def __init__(self, G, array):
         assert (isinstance(G, QNET.Qnet)), "path.__init__ requires reference to the graph containing the path"
         assert (array != None), "path.__init__ received an empty array"
-        
+
         self.G = G
         self.node_array = []
 
-        if all(isinstance(node, QNET.Qnode) for node in array):
-            self.node_array = array
+        for node in array:
+            node = G.getNode(node.name)
+            assert node is not None
+            self.node_array.append(node)
 
-        elif all(isinstance(node, str) for node in array):
-            for name in array:
-                node = G.getNode(name)
-                self.node_array.append(node)
-        else:
-            assert(False), "Path __init__ requires an array of strings or Qnodes"
-            
         # Assert path is valid in G
+        """
         for i in range(len(self.node_array) - 1):
-            if (self.node_array[i], self.node_array[i+1]) in G.edges():
+            if (self.node_array[i], self.node_array[i + 1]) in G.edges():
                 pass
-            elif (self.node_array[i+1], self.node_array[i]) in G.edges():
+            elif (self.node_array[i + 1], self.node_array[i]) in G.edges():
                 pass
             else:
                 assert (False), f"Path {self.stringify()} does not exist in Qnet."
+        """
 
         # Potentially shorter way of doing it?
-        #if all([(array[i], array[i + 1]) in G.edges() for i in range(len(array) - 1)
-        #        or (array[i + 1], array[i]) in G.edges() for i in range(len(array) - 1)]):
-        #    pass
-            
+        if all([(array[i], array[i + 1]) in G.edges()
+                or (array[i + 1], array[i]) in G.edges() for i in range(len(array) - 1)]):
+            pass
+        else:
+            assert False, f"Path {self.stringify()} does not exist in Qnet."
+
     def __str__(self):
-        return(self.stringify())
-    
+        return self.stringify()
+
     def __repr__(self):
-        return(self.stringify())
+        return self.stringify()
 
     def is_valid(self):
         """
@@ -74,26 +73,27 @@ class Path:
         """
 
         # Convert cost to additive form
-        assert(costType in ['p', 'e']), "Usage: costType in {'p', 'e'}"
+        assert (costType in ['p', 'e']), "Usage: costType in {'p', 'e'}"
         if costType == 'p':
             costType = 'd'
         elif costType == 'e':
             costType = 'log_e'
         else:
-            assert(False), 'A weird exception has occurred'
+            assert (False), 'A weird exception has occurred'
 
         cost = 0
         pathLen = len(self.node_array)
 
         # Sum all edge costs of the path
         i = 0
-        while (i < pathLen - 1):
+        while i < pathLen - 1:
             cur = self.node_array[i]
-            nxt = self.node_array[i+1]
+            nxt = self.node_array[i + 1]
             edgeData = self.G.get_edge_data(cur, nxt)
-            
-            assert edgeData != None, "Path does not exist in graph"
-            assert edgeData[costType] != None, f"costType \'{costType}\' does not exist between qnodes \'{cur.name}\' and \'{nxt.name}\'"
+
+            assert edgeData is not None, "Path does not exist in graph"
+            assert edgeData[costType] is not None,\
+                f"costType \'{costType}\' does not exist between qnodes \'{cur.name}\' and \'{nxt.name}\'"
 
             cost += edgeData[costType]
             i += 1
@@ -106,12 +106,11 @@ class Path:
         if costType == 'd':
             cost = QNET.fid_convert(cost, 'p')
         elif costType == 'log_e':
-            cost = QNET.convert(cost, 'linear')
+            cost = QNET.log_convert(cost, 'linear')
         else:
-            assert(False), 'A weird exception has occurred.'
+            assert (False), 'A weird exception has occurred.'
 
         return cost
-
 
     # TODO Test this
     def subgraph(self):
@@ -120,13 +119,11 @@ class Path:
         -------
         Qnet()
             A Qnet subgraph of the given path
-
         """
         return self.G.subgraph(self.array)
 
     def stringify(self):
         """
-
         Returns
         -------
         pString : str
@@ -142,9 +139,22 @@ class Path:
             if i < len(self.node_array):
                 pString = pString + "-"
         return pString
-    
+
     def head(self):
         return self.node_array[0]
-    
+
     def tail(self):
         return self.node_array[len(self.node_array) - 1]
+
+    def remove_edges(self):
+        """
+        Remove all edges in path from the graph G
+        :return: None
+        """
+        path_len = len(self.node_array)
+        i = 0
+        while i < path_len - 1:
+            cur = self.node_array[i]
+            nxt = self.node_array[i + 1]
+            self.G.remove_edge(cur, nxt)
+            i += 1

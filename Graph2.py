@@ -43,7 +43,7 @@ nbunch = [{'name':'A', 'coords': posA},
           {'name':'G1', 'coords': posG1, 'qnode_type':'Ground'},
           {'name':'G2', 'coords': posG2, 'qnode_type': 'Ground'},
           {'name':'T', 'coords': posT, 'qnode_type': 'Swapper'},
-          {'name':'S', 'coords': posS, 'qnode_type': 'Satellite', 'velocity':vSat, 'range':range},
+          {'name':'S', 'coords': posS, 'qnode_type': 'Satellite', 'v_cart':vSat, 'range':range},
           ]
 
 X.add_qnodes_from(nbunch)

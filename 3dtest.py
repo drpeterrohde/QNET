@@ -29,7 +29,6 @@ import ipywidgets as widgets
 from Graph1 import X as X1
 from Graph2 import X as X2
 
-
 def get_data(G, tMax, dt):
     """
     Generates the positions of nodes in the graph over time

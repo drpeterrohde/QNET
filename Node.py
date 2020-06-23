@@ -21,40 +21,30 @@ class Qnode:
     Default Qnode Class
     """
 
-    def __init__(self, name=None, coords=[0] * 3, e=1, p=1, px=0, py=0, pz=0, **kwargs):
+    def __init__(self, name="None", coords=[0] * 3, e=1, p=1, **kwargs):
         """
         Qnode Initialization
         :param str name: Name of Qnode
         :param list coords: Cartesian coordinates. Usage: [x,y,z]
         :param float e: Efficiancy. Proportion of photons that pass through the Qnode
         :param float p: Proportion of surviving photons that haven't changed state
-        :param float px: Probability of x-flip (Bitflip)
-        :param float py: Probability of y-flip
-        :param float pz: Probability of z-flip (Dephasing)
         :param float kwargs: Other costs or qualifying attributes
 
         """
-        if name == None:
-            self.name = "N.A."
-        else:
-            self.name = name
+        self.name = name
 
         assert (len(coords) == 3), "Usage: [x, y, z]"
         self.coords = coords
 
         # Initialize cost vector
-        costs = QNET.make_cost_vector(e, p, px, py, pz, **kwargs)
+        costs = QNET.make_cost_vector(e, p, **kwargs)
         self.costs = costs
 
     def __str__(self):
         return self.name
-        # Formerly:
-        # Qnode.name: ' + self.name + " -- " + "Coords:" + str(self.coords) + " -- " + str(type(self))
 
     def __repr__(self):
         return self.name
-        # Possible add on:
-        # f'{self.__class__.__name__}('f'{self.color!r}, {self.mileage!r})'
 
     def get_cost(self, costType):
         try:
@@ -62,11 +52,31 @@ class Qnode:
         except:
             assert (False), f"\"{costType}\" is not a cost or attribute of \"{self.name}\"."
 
+    def update(self, from_default=True, **kwargs):
+        """
+        Updates the attributes of a given qnode
+        :param qnode: Node to be updated
+        :param kwargs: Keyword arguements for updating the qnode
+        :return: None
 
-# SUB CLASSES
+        """
+        if from_default is True:
+            # Set attributes of node to default
+            class_name = self.__class__
+            dummy_node = class_name(name=self.name)
+            for arg in self.__dict__:
+                setattr(self, arg, dummy_node.__dict__[arg])
+
+        # For all qnode attributes, set the attribute if it exists in kwargs.
+        for arg in kwargs:
+            if arg in self.__dict__:
+                setattr(self, arg, kwargs[arg])
+            else:
+                self.costs[arg] = kwargs[arg]
+
 
 class Ground(Qnode):
-    def __init__(self, name=None, coords=[0] * 3, e=1, p=1, px=0, py=0, pz=0, **kwargs):
+    def __init__(self, name=None, coords=[0] * 3, e=1, p=1, **kwargs):
         """
         Ground Node initialization
         :param str name: Name of Qnode
@@ -78,11 +88,11 @@ class Ground(Qnode):
         :param float pz: Probability of z-flip (Dephasing)
         :param float kwargs: Other costs or qualifying attributes
         """
-        super().__init__(name, coords, e, p, px, py, pz, **kwargs)
+        super().__init__(name, coords, e, p, **kwargs)
 
 
 class Satellite(Qnode):
-    def __init__(self, name=None, coords=[0, 0, 0], e=1, p=1, px=0, py=0, pz=0, t=0, v_cart=[0, 0], line1=None,
+    def __init__(self, name=None, coords=[0, 0, 0], e=1, p=1, t=0, v_cart=[0, 0], line1=None,
                  line2=None, cartesian=True, **kwargs):
         """
         Intialises the satellite class. If cartesian == True, satellite coordinates will be cartesian and  it will
@@ -127,7 +137,7 @@ class Satellite(Qnode):
 
         if cartesian is True:
             self.velocity = v_cart
-            super().__init__(name, coords, e, p, px, py, pz, **kwargs)
+            super().__init__(name, coords, e, p, **kwargs)
 
         else:
             ## Define the time at which the satellite is being tracked ##
@@ -153,7 +163,7 @@ class Satellite(Qnode):
                 subpoint = geometry.subpoint()
                 geo_coords = [int(subpoint.latitude.degrees), int(subpoint.longitude.degrees),
                               int(subpoint.elevation.km)]
-                super().__init__(name, geo_coords, e, p, px, py, pz, **kwargs)
+                super().__init__(name, geo_coords, e, p, **kwargs)
 
             # TODO: Write descriptions for these variables here
             self.ts = ts
@@ -161,7 +171,7 @@ class Satellite(Qnode):
             self.t_startTime = t_startTime
             self.t_new = t_new
             self.satellite = satellite
-            super().__init__(name, coords, e, p, px, py, pz, **kwargs)
+            super().__init__(name, coords, e, p, **kwargs)
 
             print(t_now.utc)
 
@@ -230,8 +240,7 @@ class Satellite(Qnode):
             dist = self.cart_distance(node)
             # Difference in altitude
             dz = self.coords[2] - node.coords[2]
-            assert (
-                        dz > 0), f"Satellite altitude [{self.coords[2]}] must be greater than node altitude. [{node.coords[2]}]"
+            assert (dz > 0), f"Satellite altitude [{self.coords[2]}] must be greater than node altitude. [{node.coords[2]}]"
             # Altitude angle
             theta = np.arcsin(dz / dist)
 
@@ -264,33 +273,29 @@ class Satellite(Qnode):
         # d = scipy.integrate.quad(rho, 0, int(dist.km/1000), args = (theta))[0]
         d = scipy.integrate.quad(rho, 0, dist, args=(theta))[0]
 
-        # TODO:
-        """
-        Given effective distance, write functions for transmission probability
-        and phasing probability
-        """
-
-        def transmission_probability(d):
+        def get_efficiency(d):
             """
-            Calculate proportion of photons that survive the transmission given effective density
+            Calculate efficiency for the transmission given effective density
             :param float d: Effective density
             :return float: "p" Probability of survival
             """
 
             # Attenuation coefficient
-            K = 0.01
-            return QNET.convert(d * K, 'linear')
+            K = 0.005
+            return np.exp(-K*d)
+            # return QNET.convert(d * K, 'linear')
 
-        def phasing_probability(d):
+        def get_fidelity(d):
             """
-            Calculate proportion of surviving photons that undergo no phase transition given effective density
+            Calculate fidelity for the transmission given effective density
             :param float d: Effective density
             :return float: "e" probability of no phase flip.
             """
 
             # Attenuation coefficient
-            K = 0.01
-            return QNET.convert(d * K, 'linear')
+            K = 0.001
+            return (1 + np.exp(-K*d))/2
+            # return QNET.convert(d * K, 'linear')
 
         ## Check if satellite is above the horizon before making an edge ##
         '''
@@ -300,14 +305,14 @@ class Satellite(Qnode):
             results = [0,0]
         '''
 
-        results = [transmission_probability(d), phasing_probability(d)]
+        results = [get_efficiency(d), get_fidelity(d)]
 
         return results
 
 
 class Swapper(Qnode):
     # prob is probability of succesful swapping between nodes
-    def __init__(self, name=None, coords=[0] * 3, e=0.5, p=1, px=0, py=0, pz=0, **kwargs):
+    def __init__(self, name=None, coords=[0] * 3, e=0.5, p=1, **kwargs):
         """
         Swapper node initialization (Notice that "e" defaults to 0.5)
         :param str name: Name of Qnode
@@ -319,11 +324,11 @@ class Swapper(Qnode):
         :param float pz: Probability of z-flip (Dephasing)
         :param float kwargs: Other costs or qualifying attributes
         """
-        super().__init__(name, coords, e, p, px, py, pz, **kwargs)
+        super().__init__(name, coords, e, p, **kwargs)
 
 
 class PBS(Swapper):
-    def __init__(self, name=None, coords=[0] * 3, e=0.5, p=1, px=0, py=0, pz=0, **kwargs):
+    def __init__(self, name=None, coords=[0] * 3, e=0.5, p=1, **kwargs):
         """
         Polarizing Beam Splitter Swapper node initialization (Notice that "e" defaults to 0.5)
         :param str name: Name of Qnode
@@ -336,11 +341,11 @@ class PBS(Swapper):
         :param float kwargs: Other costs or qualifying attributes
         """
         assert (e <= 0.5), "Type \"PBS\" cannot have \"e\" value greater than 0.5."
-        super().__init__(name, coords, e, p, px, py, pz, **kwargs)
+        super().__init__(name, coords, e, p, **kwargs)
 
 
 class CNOT(Swapper):
-    def __init__(self, name=None, coords=[0] * 3, e=0.5, p=1, px=0, py=0, pz=0, **kwargs):
+    def __init__(self, name=None, coords=[0] * 3, e=0.5, p=1, **kwargs):
         """
         Polarizing Beam Splitter Swapper node initialization (Notice that "e" defaults to 0.5)
         :param str name: Name of Qnode
@@ -352,4 +357,4 @@ class CNOT(Swapper):
         :param float pz: Probability of z-flip (Dephasing)
         :param float kwargs: Other costs or qualifying attributes
         """
-        super().__init__(name, coords, e, p, px, py, pz, **kwargs)
+        super().__init__(name, coords, e, p, **kwargs)
