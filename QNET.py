@@ -6,7 +6,6 @@ from Channel import *
 from Generators import *
 from SimFunctions import *
 from Costs import *
-from MonteCarlo import *
 
 def info():
     print('QNET (February 2019) - by Hudson Leone, Maria Kieferova, & Peter Rohde')

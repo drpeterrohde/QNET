@@ -15,8 +15,28 @@ Definitions:
 import networkx as nx
 import QNET
 import numpy as np
+import copy
+import string
 
-def make_cost_vector(e=1, p=1, **kwargs):
+
+# Basic conversions
+def to_log(x):
+    return -np.log(x) + 0
+
+
+def from_log(x):
+    return np.exp(-x)
+
+
+def to_add_f(x):
+    return -np.log(np.abs(2 * x - 1)) + 0
+
+
+def from_add_f(x):
+    return (1 + np.exp(-1 * x)) / 2
+
+
+def make_cost_vector(Q, **kwargs):
     """
     Creates a dictionary of costs for a node or edge.
     Efficiency and Fidelity are initalized, as are their additive costs and any other key word arguements specified
@@ -24,66 +44,39 @@ def make_cost_vector(e=1, p=1, **kwargs):
 
     :param float e: Proportion of photons that pass through the channel
     :param float p: Proportion of surviving photons that haven't changed state. Range: (0.5, 1)
-    :param float pz: Probability of z-flip (Dephasing)
     :param float kwargs: Other costs or qualifying attributes
     :return dictionary: Cost vector
     """
-    cost_vector = {'e': e, 'p': p}
-    cost_vector.update(kwargs)
+    # The default cost vector
+    cost_vector = copy.copy(Q.cost_vector)
+    # The valid ranges of each cost
+    cost_ranges = Q.cost_ranges
+    # The conversion methods from multiplicative cost to additive and vice versa
+    conversions = Q.conversions
+
+    # Update the cost vector with all valid costs found in kwargs
+    for item in kwargs.items():
+        key = item[0]
+        if key in cost_vector:
+            cost_vector.update([item])
 
     # Assert that costs are within the correct range:
-    assert (0 <= e <= 1), "Out of range"
-    assert (0 <= p <= 1), "Out of range"
-
-    # Convention in Qnet: p > 0.5
-    if p < 0.5:
-        p = 1 - p
+    for item in cost_vector.items():
+        name, value = item[0], item[1]
+        cost_range = cost_ranges[name]
+        cost_min, cost_max = cost_range[0], cost_range[1]
+        assert (cost_min <= value <= cost_max), f"Out of range -- ({cost_min} <= {name} <= {cost_max}), " + \
+                                                f"{name} == {value}"
 
     # Initialize additive costs
-    cost_vector['log_e'] = log_convert(e, 'log')
-    cost_vector['d'] = fid_convert(p, 'd')
-
-    # Initialize other attributes
-    for arg in kwargs:
-        cost_vector[arg] = kwargs[arg]
+    additive_costs = {}
+    for item in cost_vector.items():
+        name, value = item[0], item[1]
+        add_cost_func = conversions[name][0]
+        additive_costs["add_" + name] = add_cost_func(value)
+    cost_vector.update(additive_costs)
 
     return cost_vector
-
-
-def log_convert(x, typ):
-    """
-    Convert a value to a linear or logarithmic regime.
-    Handles infinities and other exceptions
-
-    :param float x: Value to convert
-    :param str typ: Type to convert to. Usage: {'log', 'linear}
-    :return float: Converted value
-    """
-    valid_types = ['log', 'linear']
-    assert (typ in valid_types), "Invalid type, please choose one from {\'log\', \'linear\'}"
-
-    if typ == 'log':
-        assert (0 <= x <= 1)
-        return -1 * np.log(x) + 0
-    else:
-        assert (0 <= x)
-        return (np.exp(-x))
-
-
-def fid_convert(x, typ):
-    """
-    Convert the fidelity 'p' into its additive form (d = -log(2p - 1)) or vice versa.
-    :param float x: Value to convert
-    :param str typ: Type to convert to. Usage: {'p', 'd'}
-    :return float: Converted value
-    """
-    valid_types = ['p', 'd']
-    assert (typ in valid_types), "Invalid type, please choose one from {\'p\', \'d\'}"
-
-    if typ == 'd':
-        return -np.log(np.abs(2 * x - 1)) + 0
-    else:
-        return (1 + np.exp(-1 * x)) / 2
 
 
 def best_path(Q, source, target, cost_type):
@@ -95,6 +88,7 @@ def best_path(Q, source, target, cost_type):
     :param cost_type: Any valid cost type from the cost vector
     :return: string
     """
+
     def get_weight_function(costType):
         """
         Given a costType, returns a corresponding weight_function
@@ -103,6 +97,7 @@ def best_path(Q, source, target, cost_type):
         :param string costType: cost type in ['e', 'p']
         :return: weight function
         """
+
         def weight(u, v, d):
             node_u_wt = u.costs[costType]
             node_v_wt = v.costs[costType]
@@ -110,15 +105,16 @@ def best_path(Q, source, target, cost_type):
             edge_wt = d.get(costType, 1)
             return node_u_wt / 2 + node_v_wt / 2 + edge_wt
             # Note that shortest path cost will need to be compensated with 1/2 head and 1/2 tail cost
+
         return weight
 
     source = Q.getNode(source)
     target = Q.getNode(target)
 
-    # Convert multiplicative costs to additive costs
-    convert_dict = {'e':'log_e', 'p':'d'}
-    if cost_type in convert_dict:
-        cost_type = convert_dict[cost_type]
+    conversions = Q.conversions
+    assert cost_type in conversions, f"Invalid cost type. \"{cost_type}\" not in {str([key for key in conversions])}"
+    # Change cost type to additive
+    cost_type = "add_" + cost_type
 
     weight = get_weight_function(cost_type)
     path = nx.dijkstra_path(Q, source, target, weight)
@@ -148,6 +144,7 @@ def best_path_cost(Q, source, target, cost_type):
         :param string costType: cost type in ['e', 'p']
         :return: weight function
         """
+
         def weight(u, v, d):
             node_u_wt = u.costs[costType]
             node_v_wt = v.costs[costType]
@@ -155,26 +152,25 @@ def best_path_cost(Q, source, target, cost_type):
             edge_wt = d.get(costType, 1)
             return node_u_wt / 2 + node_v_wt / 2 + edge_wt
             # Note that shortest path cost will need to be compensated with 1/2 head and 1/2 tail cost
+
         return weight
 
     source = Q.getNode(source)
     target = Q.getNode(target)
 
-    # Convert multiplicative costs to additive costs
-    convert_dict = {'e': 'log_e', 'p': 'd'}
-    if cost_type in convert_dict:
-        cost_type = convert_dict[cost_type]
+    conversions = Q.conversions
+    assert cost_type in conversions, f"Invalid cost type. \"{cost_type}\" not in {str([key for key in conversions])}"
+    # Change cost type to additive
+    cost_type = "add_" + cost_type
 
-    # Calculate shortest_cost
+    # Calculate best cost in terms of additive cost
     weight = get_weight_function(cost_type)
     cost = nx.shortest_path_length(Q, source, target, weight)
     # Compensate shortest path cost with 1/2 head cost and 1/2 tail cost
-    cost += source.costs[cost_type]/2 + target.costs[cost_type]/2
+    cost += source.costs[cost_type] / 2 + target.costs[cost_type] / 2
 
     # Convert multiplicative costs back to additive costs
-    if cost_type == 'log_e':
-        cost = log_convert(cost, 'linear')
-    elif cost_type == 'd':
-        cost = fid_convert(cost, 'p')
+    back_convert = conversions[cost_type.strip("_add")][1]
+    cost = back_convert(cost)
 
     return cost

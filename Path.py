@@ -12,33 +12,25 @@ import numpy as np
 
 
 class Path:
-
     def __init__(self, G, array):
         assert (isinstance(G, QNET.Qnet)), "path.__init__ requires reference to the graph containing the path"
         assert (array != None), "path.__init__ received an empty array"
 
-        self.G = G
-        self.node_array = []
-
+        node_array = []
         for node in array:
-            node = G.getNode(node.name)
+            node = G.getNode(node)
             assert node is not None
-            self.node_array.append(node)
+            node_array.append(node)
+
+        self.G = G
+        self.node_array = node_array
+        self.head = node_array[0]
+        self.tail = node_array[len(self.node_array) - 1]
 
         # Assert path is valid in G
-        """
-        for i in range(len(self.node_array) - 1):
-            if (self.node_array[i], self.node_array[i + 1]) in G.edges():
-                pass
-            elif (self.node_array[i + 1], self.node_array[i]) in G.edges():
-                pass
-            else:
-                assert (False), f"Path {self.stringify()} does not exist in Qnet."
-        """
-
-        # Potentially shorter way of doing it?
-        if all([(array[i], array[i + 1]) in G.edges()
-                or (array[i + 1], array[i]) in G.edges() for i in range(len(array) - 1)]):
+        # Maybe we could just incorperate this into is_valid instead?
+        if all([(node_array[i], node_array[i + 1]) in G.edges() \
+                or (node_array[i + 1], node_array[i]) in G.edges() for i in range(len(node_array) - 1)]):
             pass
         else:
             assert False, f"Path {self.stringify()} does not exist in Qnet."
@@ -61,7 +53,7 @@ class Path:
                 break
         return has_ground
 
-    def cost(self, costType):
+    def cost(self, cost_type):
         """
         Calculate the cost of the path for a given costType.
         If calculating efficiency, does not take into account cost due to swapper node.
@@ -73,53 +65,39 @@ class Path:
         """
 
         # Convert cost to additive form
-        assert (costType in ['p', 'e']), "Usage: costType in {'p', 'e'}"
-        if costType == 'p':
-            costType = 'd'
-        elif costType == 'e':
-            costType = 'log_e'
-        else:
-            assert (False), 'A weird exception has occurred'
+        conversions = self.G.conversions
+        assert cost_type in conversions, f"Invalid cost type. \"{cost_type}\" not in {str([key for key in conversions])}"
+        cost_type = "add_" + cost_type
 
         cost = 0
-        pathLen = len(self.node_array)
+        path_len = len(self.node_array)
 
         # Sum all edge costs of the path
         i = 0
-        while i < pathLen - 1:
+        while i < path_len - 1:
             cur = self.node_array[i]
             nxt = self.node_array[i + 1]
-            edgeData = self.G.get_edge_data(cur, nxt)
+            edge_data = self.G.get_edge_data(cur, nxt)
 
-            assert edgeData is not None, "Path does not exist in graph"
-            assert edgeData[costType] is not None,\
-                f"costType \'{costType}\' does not exist between qnodes \'{cur.name}\' and \'{nxt.name}\'"
+            assert edge_data is not None, "Path does not exist in graph"
+            assert edge_data[cost_type] is not None, \
+                f"costType \'{cost_type}\' does not exist between qnodes \'{cur.name}\' and \'{nxt.name}\'"
 
-            cost += edgeData[costType]
+            cost += edge_data[cost_type]
             i += 1
 
         # Sum all node costs of the path
         for node in self.node_array:
-            cost += node.costs[costType]
+            cost += node.costs[cost_type]
 
-        # Convert costs back to linear form
-        if costType == 'd':
-            cost = QNET.fid_convert(cost, 'p')
-        elif costType == 'log_e':
-            cost = QNET.log_convert(cost, 'linear')
-        else:
-            assert (False), 'A weird exception has occurred.'
+        # Convert multiplicative costs back to additive costs
+        back_convert = conversions[cost_type.strip("_add")][1]
+        cost = back_convert(cost)
 
         return cost
 
     # TODO Test this
     def subgraph(self):
-        """
-        Returns
-        -------
-        Qnet()
-            A Qnet subgraph of the given path
-        """
         return self.G.subgraph(self.array)
 
     def stringify(self):
@@ -139,12 +117,6 @@ class Path:
             if i < len(self.node_array):
                 pString = pString + "-"
         return pString
-
-    def head(self):
-        return self.node_array[0]
-
-    def tail(self):
-        return self.node_array[len(self.node_array) - 1]
 
     def remove_edges(self):
         """

@@ -3,7 +3,7 @@
 """
 Created on Mon Apr  6 13:44:28 2020
 
-Small static tripartite graph
+Small static tripartite graph without node costs
 
 @author: hudson
 """
@@ -13,28 +13,18 @@ import QNET
 
 X = QNET.Qnet()
 
-lossAG1 = 0.10
-lossAG2 = 0.20
-lossAG3 = 0.40
-
-lossBG1 = 0.10
-lossBG2 = 0.20
-lossBG3 = 0.40
-
 nbunch = [{'name':'A'},
           {'name':'B'},
           {'name':'G1', 'qnode_type': 'Ground'},
           {'name':'G2', 'qnode_type': 'Ground'},
-          {'name':'G3', 'qnode_type': 'Ground'},
-          ]
+          {'name':'G3', 'qnode_type': 'Ground'}]
 
-ebunch = [{'edge': ('A', 'G1'), 'loss':lossAG1},
-          {'edge': ('A', 'G2'), 'loss':lossAG2},
-          {'edge': ('A', 'G3'), 'loss':lossAG3},
-          {'edge': ('B', 'G1'), 'loss':lossBG1},
-          {'edge': ('B', 'G2'), 'loss':lossBG2},
-          {'edge': ('B', 'G3'), 'loss':lossBG3},
-          ]
+ebunch = [{'edge': ('A', 'G1'), 'e': 0.9, 'f': 0.9},
+          {'edge': ('A', 'G2'), 'e': 0.8, 'f': 0.8},
+          {'edge': ('A', 'G3'), 'e': 0.7, 'f': 0.7},
+          {'edge': ('B', 'G1'), 'e': 0.9, 'f': 0.9},
+          {'edge': ('B', 'G2'), 'e': 0.8, 'f': 0.8},
+          {'edge': ('B', 'G3'), 'e': 0.7, 'f': 0.7}]
 
 X.add_qnodes_from(nbunch)
 X.add_qchans_from(ebunch)

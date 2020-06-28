@@ -7,35 +7,79 @@ Created on Tue Mar 24 17:22:47 2020
 
 import networkx as nx
 import QNET
+from typing import Callable
 
 typeDict = {'Ground': QNET.Ground,
             'Satellite': QNET.Satellite,
-            'Swapper': QNET.Swapper,
-            'PBS': QNET.PBS,
-            'CNOT': QNET.CNOT}
+            'Swapper': QNET.Swapper}
 
 
 class Qnet(nx.Graph):
+    def __init__(self, cost_vector=None, cost_ranges=None, conversions=None, incoming_graph_data=None, **attr):
+        """
+        Initialization method
+        :param cost_vector:
+        cost_vector is a dictionary containing costs and values. All objects in the Qnet graph are initialized with this
+        object. All costs are assumed to be multiplicative (like probability) unless the cost has the prefix "add_", in
+        which case it will be additive. The keys in cost_vector are the valid costs for the Qnet graph, and the values
+        are the default magnitudes of these costs.
 
-    def __init__(self, incoming_graph_data=None, **attr):
+        If cost_vector is none, then self.cost_vector = {'e':1, 'p':1, 'add_e':0, 'add_p':0}.
+        For details on Qnet cost vectors and the default costs, please consult the documentation in Costs.py
+
+        :type cost_vector: Dict[str, int], optional
+
+        :param conversions:
+        A dictionary that maps Qnet costs to a pair of conversion functions to and from the additive cost respectively.
+        The keys of these dictionaries are the valid costs for the Qnet graph, and the values are lists of conversion
+        functions that accept one float inputs and return a single float.
+        conversions = {'cost': [func to convert to additive, func to convert to multiplicative]}
+
+        :type conversions: Dict[str, [Callable, Callable]]
+
+        :param incoming_graph_data: Additional graph data.
+        See NetworkX documentation: https://networkx.github.io/documentation/stable/reference/classes/graph.html#methods
+
+        :param attr: Additional attributes.
+        See NetworkX documentation: https://networkx.github.io/documentation/stable/reference/classes/graph.html#methods
+        """
+        if cost_vector is None and conversions is None:
+            cost_vector = {'e': 1, 'f': 1}
+            cost_ranges = {'e': (0, 1), 'f': (0.5, 1)}
+            conversions = {'e': [QNET.to_log, QNET.from_log], 'f': [QNET.to_add_f, QNET.from_add_f]}
+        else:
+            assert set(cost_vector.keys()) == set(cost_ranges.keys()), \
+                "Keys in \"cost_vector\" do not match keys in \"cost_ranges\""
+            assert set(cost_vector.keys()) == set(conversions.keys()), \
+                "Keys in \"cost_vector\" do not match keys in \"conversions\""
+            for rng in cost_ranges.values():
+                assert(len(rng) == 2),\
+                    "Usage: cost_ranges = {cost: (min_val, max_val)}"
+            for functions in conversions.values():
+                assert(len(functions) == 2),\
+                    "Usage: conversions = {'cost': [convert_to_additive, convert_to_multiplicative]}"
+
+        self.cost_vector = cost_vector
+        self.cost_ranges = cost_ranges
+        self.conversions = conversions
         super().__init__(incoming_graph_data, **attr)
 
     def __str__(self):
-
         qnodes = ""
         if len(self.nodes()) == 0:
             qnodes += "None\n"
         else:
             for node in self.nodes():
-                qnodes += "Name: " + "\"" + node.name + "\"" + '\n'\
-                    + str(type(node)) + '\n'\
-                    + "Coordinates: " + str(node.coords) + '\n'\
-                    + "Costs: " + str(node.costs) + '\n'\
-
+                qnodes += "Name: " + "\"" + node.name + "\"" + '\n' \
+                          + str(type(node)) + '\n' \
+                          + "Coordinates: " + str(node.coords) + '\n' \
+                          + "Costs: " + str(node.costs) + '\n'
                 if isinstance(node, QNET.Satellite):
                     qnodes += "Cartesian == " + str(node.cartesian) + '\n'
                     if node.cartesian == True:
                         qnodes += "Velocity == " + str(node.velocity) + '\n'
+                if isinstance(node, QNET.Swapper):
+                    qnodes += "Swap probability == " + str(node.swap_prob) + '\n'
 
                 qnodes += "\n"
 
@@ -58,24 +102,20 @@ class Qnet(nx.Graph):
         :param kwargs: Keyword arguments needed to initialize the qnode
         :return: None
         """
-
         # if qnode_type is None, initialize as the default type.
         if qnode_type is None:
-            new_node = QNET.Qnode(**kwargs)
-            old_node = self.getNode(new_node.name)
-            if old_node is None:
-                self.add_node(new_node)
-            else:
-                old_node.update(kwargs)
+            new_node = QNET.Qnode(self, **kwargs)
         else:
             # Check if type is valid
             assert (qnode_type in typeDict), f"Unsupported qnode type: \'{qnode_type}\'"
-            new_node = typeDict[qnode_type](**kwargs)
-            old_node = self.getNode(new_node.name)
-            if old_node is None:
-                self.add_node(new_node)
-            else:
-                self.update_qnode(old_node, **kwargs)
+            new_node = typeDict[qnode_type](self, **kwargs)
+
+        # Check if node already exists in graph. If no, add new_node. If yes, update old node
+        old_node = self.getNode(new_node.name)
+        if old_node is None:
+            self.add_node(new_node)
+        else:
+            old_node.update(self, **kwargs)
 
     def add_qnodes_from(self, nbunch):
         """
@@ -88,14 +128,15 @@ class Qnet(nx.Graph):
 
     def remove_qnode(self, qnode):
         qnode = self.getNode(qnode)
-        assert qnode is not None
+        if qnode is None:
+            return
         self.remove_node(qnode)
 
     def remove_qnodes_from(self, nbunch):
         for data in nbunch:
             self.remove_qnode(data)
 
-    def add_qchan(self, edge=None, e=1, p=1, **kwargs):
+    def add_qchan(self, edge=None, **kwargs):
         """
         Add a Qchan to the graph. If either of the node types are Satellites, the airCosts
         will be automatically calculated from current positions and added to the cost array.
@@ -118,31 +159,26 @@ class Qnet(nx.Graph):
         v = self.getNode(str(edge[1]))
 
         if u is None:
-            u = QNET.Ground(name=str(edge[0]))
+            u = QNET.Ground(self, name=str(edge[0]))
             self.add_node(u)
         if v is None:
-            v = QNET.Ground(name=str(edge[1]))
+            v = QNET.Ground(self, name=str(edge[1]))
             self.add_node(v)
 
         # If either of the nodes are satellites, get air costs
         if isinstance(u, QNET.Satellite):
-            e, p = u.airCost(v)
+            e, f = u.airCost(v)
+            kwargs.update({'e': e, 'f': f})
         elif isinstance(v, QNET.Satellite):
-            e, p = v.airCost(u)
+            e, f = v.airCost(u)
+            kwargs.update({'e': e, 'f': f})
 
-        cost_vector = QNET.make_cost_vector(e, p, **kwargs)
+        cost_vector = QNET.make_cost_vector(self, **kwargs)
         self.add_edge(u, v, **cost_vector)
 
     def add_qchans_from(self, cbunch):
         """
         Adds a list of channels connecting Qnodes
-        Parameters
-        ----------
-        cbunch : array
-            Array of dictionaries with channel attributes as key-value pairs
-        Returns
-        -------
-        None.
         """
         for edge in cbunch:
             self.add_qchan(**edge)
@@ -202,50 +238,4 @@ class Qnet(nx.Graph):
 
                     # Update edge
                     self.remove_edge(s, n)
-                    self.add_qchan(edge = [s.name, n.name], e=new_e, p=new_p)
-
-    # TODO Test this:
-    def bi_purify(self, path1, path2, costType):
-        """
-        Returns the purified path cost of two paths in the graph
-        :param Union[str, Path] path1:
-        :param Union[str, Path] path2:
-        :param str costType: Any of {'p', 'dp'}
-        :return float: Purified cost
-        """
-        assert (costType in ['p', 'dp']), "Usage: CostType in (\'p\', \'dp\')."
-
-        # If the paths are not QNET paths, make them
-        if not isinstance(path1, QNET.Path):
-            path1 = QNET.Path(G=self, array=path1)
-        if not isinstance(path2, QNET.Path):
-            path2 = QNET.Path(G=self, array=path2)
-
-        # Check that both paths start and finish in the same place
-        assert (path1.head() == path2.head()), "Paths do not start at the same node."
-        assert (path1.tail() == path2.tail()), "Paths do not end at the same node."
-
-        # Assert that no nodes except for head and tail are coincident in (path1, path2)
-        weakest_link = min(len(path1.node_array), len(path2.node_array))
-        for i in range(weakest_link):
-            if (i == 0 or i == weakest_link - 1):
-                pass
-            else:
-                if path1.node_array[i] == path2.node_array[i]:
-                    assert False, f"Paths have coincident nodes in body. Cannot purify."
-
-        def fidTransform(F1, F2):
-            return (F1 * F2) / (F1 * F2 + (1 - F1) * (1 - F2))
-
-        p1 = path1.cost('p')
-        p2 = path2.cost('p')
-
-        if p1 >= 0.5 and p2 >= 0.5:
-            pur_cost = fidTransform(p1, p2)
-        else:
-            pur_cost = max(p1, p2)
-
-        if costType == 'dp':
-            pur_cost = QNET.convert(pur_cost, 'log')
-
-        return pur_cost
+                    self.add_qchan(edge=[s.name, n.name], e=new_e, p=new_p)

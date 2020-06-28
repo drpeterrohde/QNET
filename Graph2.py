@@ -7,51 +7,23 @@ Linear network with two ground nodes, a swapper node, and one satellite
 
 @author: hudson
 """
-
-import networkx as nx
 import QNET
-from Qgraph import Qnet
 
-######## USER INPUTS #########
+X = QNET.Qnet()
 
-# Node positions:
-posA = [50,0,0]
-posG1 = [100, 0, 0]
-posT = [150, 0, 0]
-posG2 = [200, 0, 0]
-posB = [250, 0, 0]
+Qnodes = [{'name': 'A', 'coords': [50, 0, 0]},
+          {'name': 'B', 'coords': [250, 0, 0]},
+          {'name': 'G1', 'qnode_type':'Ground', 'coords': [100, 0, 0]},
+          {'name': 'G2', 'qnode_type': 'Ground', 'coords': [200, 0, 0]},
+          {'name': 'T', 'qnode_type': 'Swapper', 'coords': [150, 0, 0]},
+          {'name': 'S', 'qnode_type': 'Satellite', 'coords': [0, 0, 100], 'v_cart': [30, 0], 'range':100}]
 
-# Satellite arguements
-posS = [0,0,100]
-vSat = [30, 0]
-range = 100
+X.add_qnodes_from(Qnodes)
 
-# STATIC CHANNEL COSTS
-# Loss of 0.05 corresponds to ~95% success probability
-A_G1_pz = 0.05
-G1_T_pz = 0.05
-T_G2_pz = 0.05
-G2_B_pz = 0.05
-
-####### INITIALIZATIONS #######
-
-# INITIALIZE NETWORK AND NODES
-X = Qnet()
-
-nbunch = [{'name':'A', 'coords': posA},
-          {'name':'B', 'coords': posB},
-          {'name':'G1', 'coords': posG1, 'qnode_type':'Ground'},
-          {'name':'G2', 'coords': posG2, 'qnode_type': 'Ground'},
-          {'name':'T', 'coords': posT, 'qnode_type': 'Swapper'},
-          {'name':'S', 'coords': posS, 'qnode_type': 'Satellite', 'v_cart':vSat, 'range':range},
-          ]
-
-X.add_qnodes_from(nbunch)
-
-ebunch = [{'edge': ('A', 'G1'), 'pz': A_G1_pz},
-          {'edge': ('G1', 'T'), 'pz': G1_T_pz},
-          {'edge': ('T', 'G2'), 'pz': T_G2_pz},
-          {'edge': ('G2', 'B'), 'pz': G2_B_pz},
+ebunch = [{'edge': ('A', 'G1'), 'e': 0.9, 'f': 0.9},
+          {'edge': ('G1', 'T'), 'e': 0.9, 'f': 0.9},
+          {'edge': ('T', 'G2'), 'e': 0.9, 'f': 0.9},
+          {'edge': ('G2', 'B'), 'e': 0.9, 'f': 0.9},
           {'edge': ('S', 'A')},
           {'edge': ('S', 'B')}
           ]

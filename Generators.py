@@ -1,14 +1,13 @@
 """
 Created on Fri Mar 6 13:02:25 2020
-@author: hudson
+@author: Hudson and Deepesh
 """
 
 import networkx as nx
 import QNET
 import numpy as np
 
-
-def multidim_lattice(dim, size, e, p, periodic=False):
+def multidim_lattice(dim, size, e, f, periodic=False):
     dim = [size]*dim
     print(dim)
     G = nx.grid_graph(dim, periodic)
@@ -17,11 +16,11 @@ def multidim_lattice(dim, size, e, p, periodic=False):
     for edge in G.edges():
         u = edge[0]
         v = edge[1]
-        Q.add_qchan(edge=[u, v], e=e, p=p)
+        Q.add_qchan(edge=[u, v], e=e, f=f)
     return Q
 
 
-def altLinGen(n, spacing, eVal=1, pxVal=0, pyVal=0, pzVal=0):
+def altLinGen(n, spacing, e=1, f=0):
     '''
     Constructs a linear chain with end Qnodes A and B, and alternating Swapper and Ground nodes in the middle.
 
@@ -31,14 +30,8 @@ def altLinGen(n, spacing, eVal=1, pxVal=0, pyVal=0, pzVal=0):
         Total number of nodes in the chain, including end nodes A and B.
     spacing : Array of float
         Distance between two consecutive nodes in [x,y,z] format.
-    eVal : float
+    e : float
         Efficiency of a single channel in the regular lattice. The default is 1.
-    pxVal : float
-        Probability of state not undergoing X-flip in the regular lattice. The default is 0.
-    pyVal : float
-        Probability of state not undergoing Y-flip in the regular lattice. The default is 0.
-    pzVal : float
-        Probability of state not undergoing Z-flip in the regular lattice. The default is 0.
 
     Returns
     -------
@@ -50,18 +43,18 @@ def altLinGen(n, spacing, eVal=1, pxVal=0, pyVal=0, pzVal=0):
     Q = QNET.Qnet()
 
     if n > 0:
-        firstNode = QNET.Qnode(name='A', coords=spacing)
+        firstNode = QNET.Qnode(Q, name='A', coords=spacing)
         Q.add_node(firstNode)
 
-    previousNode = QNET.Qnode()
-    currentNode = QNET.Qnode()
+    previousNode = QNET.Qnode(Q)
+    currentNode = QNET.Qnode(Q)
 
     ChannelList = []
 
     if n > 2:
         for i in range(n - 2):
-            GroundNode = QNET.Ground(name=('G' + str(i + 1)), coords=np.multiply(i + 2, spacing))
-            SwapNode = QNET.Swapper(name=('T' + str(i + 1)), coords=np.multiply(i + 2, spacing))
+            GroundNode = QNET.Ground(Q, name=('G' + str(i + 1)), coords=np.multiply(i + 2, spacing))
+            SwapNode = QNET.Swapper(Q, name=('T' + str(i + 1)), coords=np.multiply(i + 2, spacing))
 
             if n > 3:
                 if (i) % 2 == 0:
@@ -75,18 +68,18 @@ def altLinGen(n, spacing, eVal=1, pxVal=0, pyVal=0, pzVal=0):
 
             if i > 0:
                 ChannelList.append(
-                    {'edge': (previousNode.name, currentNode.name), 'e': eVal, 'px': pxVal, 'py': pyVal, 'pz': pzVal})
+                    {'edge': (previousNode.name, currentNode.name), 'e': e, 'f': f})
 
             previousNode = currentNode
 
     if n > 1:
-        lastNode = QNET.Qnode(name='B', coords=np.multiply(n, spacing))
+        lastNode = QNET.Qnode(Q, name='B', coords=np.multiply(n, spacing))
         Q.add_node(lastNode)
 
         ChannelList.append(
-            {'edge': (firstNode.name, list(Q.nodes)[1].name), 'e': eVal, 'px': pxVal, 'py': pyVal, 'pz': pzVal})
+            {'edge': (firstNode.name, list(Q.nodes)[1].name), 'e': e, 'f': f})
         ChannelList.append(
-            {'edge': (list(Q.nodes)[n - 2].name, lastNode.name), 'e': eVal, 'px': pxVal, 'py': pyVal, 'pz': pzVal})
+            {'edge': (list(Q.nodes)[n - 2].name, lastNode.name), 'e': e, 'f': f})
 
     Q.add_qchans_from(ChannelList)
 

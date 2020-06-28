@@ -243,8 +243,8 @@ def simple_purify(Q, source, target, threshold = None):
     target = Q.getNode(target)
     assert source is not None and target is not None
 
-    path = QNET.best_path(Q, source, target, 'p')
-    pur_fid = path.cost('p')
+    path = QNET.best_path(Q, source, target, 'f')
+    pur_fid = path.cost('f')
     path.remove_edges()
     path_counter = 1
 
@@ -252,8 +252,8 @@ def simple_purify(Q, source, target, threshold = None):
         if threshold is not None:
             if path_counter > threshold:
                 break
-        path = QNET.best_path(Q, source, target, 'p')
-        new_fid = path.cost('p')
+        path = QNET.best_path(Q, source, target, 'f')
+        new_fid = path.cost('f')
         pur_fid = QNET.fidTransform(pur_fid, new_fid)
         path.remove_edges()
         path_counter += 1
