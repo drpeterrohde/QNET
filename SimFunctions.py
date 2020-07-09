@@ -28,108 +28,83 @@ def getTimeArr(tMax, dt):
     """
     return np.arange(0, tMax, dt)
 
-def getCostArr(path, costType, tMax, dt):
-    """
-    Calculates an array of costs for a path over a given time frame
-    Parameters
-    ----------
-    path : Path
-        A Valid Qnet Path
-    costType : str
-        The type of cost you would like to calculate for
-        Choose from {'loss', 'fid'}
-    tMax : float
-        Maximum time period
-    dt : TYPE
-        Time increment
-    Returns
-    -------
-    costArr : array
-    """
 
-    # TODO: This function is not working at all
+def sim_all_simple(G, source, target, tMax, dt, cost_type = None):
+    # Get cost arrays for all simple paths over time
 
-    costArr = []
-    sizeArr = len(np.arange(0,tMax,dt))
-    i = 0
-    while i < sizeArr:
-        cost = path.cost(costType)
-        costArr.append(cost)
-        i += 1
-        
-    for node in path.node_array:
-        if isinstance(node, QNET.Satellite):
-            if node.cartesian is False:
-                node.setTime()
-        
-    return costArr
-    
-
-def getCostArrays(G, sourceName, targetName, costType, tMax, dt):
-    """
-    Calculates an array of costs for all simple paths over a given time frame
-    Parameters
-    ----------
-    G : Qnet()
-        Qnet graph
-    sourceName : str
-        Name of source node
-    targetName : str
-        Name of target node
-    costType : str
-        The type of cost you would like to calculate for
-        Choose from {'loss', 'fid'}
-    tMax : float
-        Maximum time period
-    dt : TYPE
-        Time increment
-    Returns
-    -------
-    pathDict : dict
-        Dictionary of paths to their cost in units of costType
-    """
-    
     C = copy.deepcopy(G)
-    
+
     # get source and target from names
-    source = C.getNode(sourceName)
-    target = C.getNode(targetName)
-    
+    source = C.getNode(source)
+    target = C.getNode(target)
+
     # Create a generator of all simple paths
     simplePathGen = nx.algorithms.simple_paths.all_simple_paths(C, source, target)
-    
+
     # Unpack paths from generator into array as QNET paths
-    pathArr = []
+    path_arr = []
     for path in simplePathGen:
-        pathArr.append(QNET.Path(C, path))
-        
+        path_arr.append(QNET.Path(C, path))
+
     # Assign each path to an empty cost array
-    pathDict = {path: [] for path in pathArr}
-    
+    path_dict = {path: [] for path in path_arr}
+
     # Initialize array size
-    sizeArr = len(np.arange(0,tMax,dt))
-    i = 0    
-    
-    while i < sizeArr:
+    size_arr = len(np.arange(0, tMax, dt))
+    i = 0
+    while i < size_arr:
         j = 0
-        while j < len(pathArr):
+        while j < len(path_arr):
             # Get the cost of each path and append it to respective array
-            pathCost = pathArr[j].cost(costType)
-            pathDict[pathArr[j]].append(pathCost)
+            if cost_type is None:
+                # Fetch all costs in cost vector
+                cost = path_arr[j].cost_vector()
+            else:
+                # Fetch specified cost
+                cost = path_arr[j].cost(cost_type)
+            path_dict[path_arr[j]].append(cost)
             j += 1
-            
+
         C.update(dt)
         i += 1
-        
-    for path in pathArr:
+
+    for path in path_arr:
         for node in path.node_array:
             if isinstance(node, QNET.Satellite):
                 if node.cartesian is False:
                     node.setTime()
-                
-    return pathDict
 
-def optimal_cost_array(G, source_name, target_name, cost_type, tMax, dt):
+    return path_dict
+
+
+def sim_protocol(G, source, target, protocol, tMax, dt,):
+    C = copy.deepcopy(G)
+    u = C.getNode(source)
+    v = C.getNode(target)
+
+    # Initialize cost array
+    cost_arr = []
+    # Initialize size of array
+    size_arr = len(np.arange(0, tMax, dt))
+    i = 0
+    while i < size_arr:
+        # Run protocol to get either scalar cost or cost bector
+        cost = protocol(C, u, v)
+        cost_arr.append(cost)
+        # Update graph
+        C.update(dt)
+        i += 1
+    return cost_arr
+
+def plot_cv(x, cva, label):
+    for cost in cva[0].keys():
+        a = []
+        for d in cva:
+            a.append(d[cost])
+        plt.plot(x, a, label=f"{label} ({cost})")
+
+
+def sim_optimal_cost(G, source_name, target_name, cost_type, tMax, dt):
     """
     Calculate the costs of the lowest cost path from "source" to "target" over time.
     :param G: Qnet Graph
@@ -174,55 +149,6 @@ def optimal_cost_array(G, source_name, target_name, cost_type, tMax, dt):
 
     return cost_arr
 
-def getPurifiedArray(G, sourceName, targetName, tMax, dt):
-    """
-    Calculate the costs of an entanglement purified channel from "source" to "target" 
-    over time
-    Parameters
-    ----------
-    G : Qnet()
-        Qnet graph
-    sourceName : str
-        Name of sourceNode
-    targetName : str
-        Name of targetNode
-    costType : str
-        The type of cost you would like to calculate for
-        Choose from {'loss', 'fid'}
-    tMax : float
-        Maximum time period
-    dt : TYPE
-        Time increment
-    Returns
-    -------
-    purLossArr : array
-    """
-    C = copy.deepcopy(G)
-    
-    u = C.getNode(sourceName)
-    v = C.getNode(targetName)
-    
-    # Initialize arrays
-    costArr = []
-    sizeArr = len(np.arange(0,tMax,dt))
-    
-    # Get purified path cost and append it to costArr
-    i = 0
-    while i < sizeArr:
-        pur_cost = C.purify(sourceName, targetName)
-        costArr.append(pur_cost)
-        
-        # Update satellites
-        C.update(dt)
-        i += 1
-        
-    if isinstance(u, QNET.Satellite):
-        u.setTime()
-    if isinstance(v, QNET.Satellite):
-        v.setTime()
-    
-    return costArr
-
 def posPlot(Q, u, v, tMax, dt):
     """
     Plot the distance between two nodes over time
@@ -265,7 +191,7 @@ def posPlot(Q, u, v, tMax, dt):
     plt.show()    
     
 
-def plot_2d(Q, node_label = None, edge_label=None, FOV=('x', 'y')):
+def plot_2d(Q, node_label = None, edge_label=None, title=None, FOV=('x', 'y')):
     """
     Plots a 2d view of a Qnet graph in spatial coordinates of nodes
     Edge costs listed are rounded to four significant figures
@@ -316,6 +242,10 @@ def plot_2d(Q, node_label = None, edge_label=None, FOV=('x', 'y')):
     nx.draw_networkx(Q, pos=pos_dict, node_color=node_colours)
     nx.draw_networkx_labels(Q, pos=offset, labels=node_labels)
     nx.draw_networkx_edge_labels(Q, pos_dict, edge_labels=edge_labels)
+
+    if title is not None:
+        plt.title(title)
+
     plt.show()
 
 
@@ -391,8 +321,33 @@ def satTrajectory(Q, u, tMax, dt):
         i += 1
     if isinstance(u, QNET.Satellite):
         u.setTime()
-    
-    return posArr 
+    return posArr
+
+
+def plot_paths(Q, tMax, dt):
+    # Get Time Array
+    time_arr = QNET.getTimeArr(tMax, dt)
+
+    # Plot the losses of every simple path over time
+    path_dict = sim_all_simple(Q, 'A', 'B', tMax, dt)
+    for path in path_dict:
+        for cost in Q.cost_vector.keys():
+            a = []
+            for d in path_dict[path]:
+                a.append(d[cost])
+            plt.plot(time_arr, a, label = f"{str(path)} ({cost})")
+
+    # Purified costs over time:
+    pur_arr = sim_protocol(Q, "A", "B", QNET.simple_purify, tMax, dt)
+    plot_cv(time_arr, pur_arr, label = "Path Purification")
+
+    plt.xlabel('Time')
+    plt.ylabel("Path Costs")
+    plt.title("Network Path Costs Over Time Between Nodes \"A\" and \"B\"")
+
+    plt.legend()
+    plt.show()
+
 
 def plotSatTrajectory(Q, u, tMax, dt):
     '''
@@ -442,7 +397,7 @@ def plotSatTrajectory(Q, u, tMax, dt):
     
     plt.title("Mercator Projection")
     plt.show()
-    
+
 def plotMap(Q, tMax, dt):
     '''
     Plot QNET on a map. 

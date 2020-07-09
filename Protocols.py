@@ -4,18 +4,17 @@
 Created on Wed Mar 25 10:59:46 2020
 @author: hudson
 
-Utilities.py contains functions for entanglement purification, entanglement swapping, and other functions that can be
+Protocols.py contains functions for entanglement purification, entanglement swapping, and other functions that can be
 used to reduce Qnet graphs
 """
 
 import copy
 import numpy as np
-from mpmath import nsum
 import networkx as nx
 import QNET
 
 
-def linear_swap_reduce(Q, source, dest):
+def simple_swap(Q, source, dest):
     """
     Given a linear graph or subgraph, this function calculates the efficiency from head to tail if all valid swapper
     nodes are used. Currently, both this quantity and the normal efficiency of the path are returned
@@ -161,7 +160,7 @@ def linear_swap_reduce(Q, source, dest):
 def fidTransform(F1, F2):
     return (F1 * F2) / (F1 * F2 + (1 - F1) * (1 - F2))
 
-def purify(Q, source, target, method = "path_disjoint"):
+def purify(Q, source, target):
     """
 
     This function performs a multi-path entanglement purification between a source and target node using all
@@ -193,33 +192,33 @@ def purify(Q, source, target, method = "path_disjoint"):
     generator = nx.node_disjoint_paths(Q, u, v)
 
     # Get p values for each path
-    p_arr = []
+    f_arr = []
     for path in generator:
         new_path = QNET.Path(Q, path)
         # check if path is valid
         if new_path.is_valid() == True:
-            p = new_path.cost('p')
-            p_arr.append(p)
+            f = new_path.cost('f')
+            f_arr.append(f)
         else:
             pass
 
-    assert (len(p_arr) != 0), f"No path exists from {source} to {target}"
+    assert (len(f_arr) != 0), f"No path exists from {source} to {target}"
 
     # Initialize purified fidelity as the max fidelity value
-    pure_cost = max(p_arr)
-    p_arr.remove(pure_cost)
+    pure_cost = max(f_arr)
+    f_arr.remove(pure_cost)
 
     # Purify fidelities together
     # TODO: Depreciate this code
-    while len(p_arr) != 0:
-        pmax = max(p_arr)
+    while len(f_arr) != 0:
+        pmax = max(f_arr)
         pure_cost = fidTransform(pure_cost, pmax)
-        p_arr.remove(pmax)
+        f_arr.remove(pmax)
 
     return pure_cost
 
 
-def simple_purify(Q, source, target, threshold = None):
+def simple_purify(Q = None, head = None, tail = None, threshold = None):
     """
     A simple purification algorithm that works as follows:
     1. Find the best path between source and target and save the cost
@@ -230,35 +229,78 @@ def simple_purify(Q, source, target, threshold = None):
     target
 
     :param Q:
-    :param source:
-    :param target:
-    :param: threshold:
-    :return:
+    :param source: Source Node
+    :param target: Target Node
+    :param: threshold: Maximum number of paths to purify before returning cost vector
+    :return: cost vector
+    :param: dict
     """
     if threshold is not None:
         assert isinstance(threshold, int)
         assert threshold > 0
 
-    source = Q.getNode(source)
-    target = Q.getNode(target)
-    assert source is not None and target is not None
+    # Default cost_array
+    if None in [Q, head, tail]:
+        return {'e': 0, 'f': 0}
 
-    path = QNET.best_path(Q, source, target, 'f')
-    pur_fid = path.cost('f')
+    # Make copy of graph
+    C = copy.deepcopy(Q)
+
+    # Get source and target
+    head = C.getNode(head)
+    tail = C.getNode(tail)
+
+    # Find the best path in terms of fidelity,
+    path = QNET.best_path(C, head, tail, 'f')
+    pur_f = path.cost('f')
+    pur_e = path.cost('e')
     path.remove_edges()
     path_counter = 1
 
-    while nx.has_path(Q, source, target) is True:
+    # Purify paths against eachother until either no path exists or threshold is reached
+    while nx.has_path(C, head, tail) is True:
         if threshold is not None:
             if path_counter > threshold:
                 break
-        path = QNET.best_path(Q, source, target, 'f')
-        new_fid = path.cost('f')
-        pur_fid = QNET.fidTransform(pur_fid, new_fid)
+        path = QNET.best_path(C, head, tail, 'f')
+        new_f = path.cost('f')
+        new_e = path.cost('e')
+
+        # Efficiency is weakest-link. Update pur_e to whatever the lowest path efficiency is.
+        if new_e < pur_e:
+            pur_e = new_e
+
+        pur_f = QNET.fidTransform(pur_f, new_f)
         path.remove_edges()
         path_counter += 1
 
-    # Calculate the efficiency of the purification
+    # Each path purification requires 2*(n-1) bell projections, where n is the number of bell pairs
+    # Assume that projections are done with a PBS with e = 1/2
+    pur_e = pur_e * 0.5**(2*path_counter - 1)
 
-    return pur_fid
+    return {'e':pur_e, 'f':pur_f}
+
+
+def best_costs(P = None, head = None, tail = None):
+    # Default cost_array
+    if None in [P, head, tail]:
+        return {'e': 0, 'f': 0}
+    else:
+        e = QNET.best_path_cost(P, head, tail, cost_type='e')
+        f = QNET.best_path_cost(P, head, tail, cost_type='f')
+    cost_vector = {'e':e, 'f':f}
+    return cost_vector
+
+
+def path_exist(P=None, head=None, tail=None):
+    if None in [P, head, tail]:
+        return {'p': 0}
+    if isinstance(head, QNET.Qnode):
+        if not nx.has_path(P, head, tail):
+            return{'p': 0}
+    else:
+        for i in range(len(head)):
+            if not nx.has_path(P, head[i], tail[i]):
+                return{'p': 0}
+    return {'p': 1}
 

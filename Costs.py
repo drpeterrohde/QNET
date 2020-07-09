@@ -18,6 +18,8 @@ import numpy as np
 import copy
 import string
 
+def remove_prefix(s, prefix):
+    return s[len(prefix):] if s.startswith(prefix) else s
 
 # Basic conversions
 def to_log(x):

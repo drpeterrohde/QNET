@@ -40,16 +40,22 @@ def monte_method(protocols, head_tail_method, Q, num_iters, num_steps, protocol_
     specified. In the event that only 0 or 1 data point was collected, (Hence either mean or variance is not well
     defined) then the mean and variance are set to zero.
 
-    :param list protocols:
-    A list of functions that will be used on the percolated graphs. They must each have the following form:
-    function(Q, head, tail, **kwargs)
-    Where Q is a Qnet graph, and head and tail are two nodes in Q
+    :param protocols:
+    A list of functions that will be used on the percolated graphs. They must each be of the following form:
+        function(Q, head, tail, **kwargs)
+        Q: Qnet Graph
+        head: List of Qnodes
+        tail: List of Qnodes
+        return: An array of all valid costs in Qnet.
+    WARNING: All protocols must return all costs of Qnet in the same order
+    # TODO: Might be easier if the protocols instead returned cost vectors.
+    :type protocols: list, optional
 
     :param head_tail_method:
-    This is a method for generating two communication parties over which the protocol will take place. It be of the
+    This is a method for generating two communication parties over which the protocol will take place. It must be of the
     following form:
-    function(Q)
-    Where is Q is a Qnet graph
+        function(Q)
+        Q: Qnet Graph
 
     :param Q: The Qnet graph to be percolated
     :param int num_iters: Number of iterations per percolation density
@@ -86,96 +92,99 @@ def monte_method(protocols, head_tail_method, Q, num_iters, num_steps, protocol_
     # Range of percolation densities to calculate for
     defect_probs = np.linspace(0, 1, num_steps)
 
-    # Initalize 2d lattice of methods and costs
-    cost_array = [[[] for i in range(num_steps)] for j in range(len(protocols))]
+    # Initalize cost_array
+    # cost_array == cost_array[cost_type][protocol][num_step]
+    cost_array = [[[] for j in range(num_steps)] for k in range(len(protocols))]
 
-    prob_index = 0
-    for prob in defect_probs:
-        for i in range(num_iters):
-            # Percolate the graph and get head and tail node
-            P, head, tail = percolate(Q, prob, head_tail_method)
+    for prob_index in range(num_steps):
+        for iter_index in range(num_iters):
+            # Percolate the graph and get head - tail nodes
+            P, head, tail = percolate(Q, defect_probs[prob_index], head_tail_method)
             assert head is not None and tail is not None
-            # If head_tail method returns lists of nodes, check they're the same size
+
+            # If head_tail method returns a list of nodes for head and tail, check they're the same size
             if isinstance(head, list) or isinstance(tail, list):
                 assert len(head) == len(tail)
-            if nx.has_path(P, head, tail):
-                method_index = 0
-                for protocol in protocols:
+
+            # Check if paths exist between all head and tail pairs
+            paths_exist = True
+            if isinstance(head, list) or isinstance(tail, list):
+                for i in range(len(head)):
+                    if not nx.has_path(P, head[i], tail[i]):
+                        paths_exist = False
+            else:
+                if nx.has_path(P, head, tail) is False:
+                    paths_exist = False
+
+            # If paths do exist, run each of the protocols against the graphs
+            if paths_exist is True:
+                for proto_index in range(len(protocols)):
                     # Get protocol kwargs
                     if protocol_kwargs is not None:
-                        kwargs = protocol_kwargs[method_index]
+                        kwargs = protocol_kwargs[proto_index]
                     else:
                         kwargs = {}
-                    cost = protocol(P, head, tail, **kwargs)
-                    cost_array[method_index][prob_index].append(cost)
-                    method_index += 1
-            # Else if no path exists between head and tail:
+
+                    # Get cost_vector from the protocol
+                    cost_vector = protocols[proto_index](P, head, tail, **kwargs)
+                    # Add the cost vector to the array
+                    cost_array[proto_index][prob_index].append(cost_vector)
+
+            # Else if no paths exist between head and tail nodes, try running exception methods
             else:
                 if exception_methods is not None:
                     # Run exception_methods for costs
-                    method_index = 0
-                    for method in exception_methods:
-                        if method is not None:
-                            cost = method()
-                            cost_array[method_index][prob_index].append(cost)
-                        method_index += 1
+                    for method_index in range(len(exception_methods)):
+                        if exception_methods[method_index] is not None:
+                            cost_vector = exception_methods[method_index]()
+                            # Add cost_vector to the array
+                            cost_array[method_index][prob_index].append(cost_vector)
 
-        prob_index += 1
+    # Process cost_array such that each data point takes the form (mean, error)
+    processed_array = [[{} for i in range(num_steps)] for j in range(len(protocols))]
 
-    # Before cost array is returned, process the data into (mean, var) form
-    processed_array = [[[] for i in range(num_steps)] for j in range(len(protocols))]
+    for proto_index in range(len(protocols)):
+        for prob_index in range(num_steps):
 
-    for i in range(len(protocols)):
-        for j in range(num_steps):
-            # Except cases where mean and variance are not well defined
-            if len(cost_array[i][j]) in [0, 1]:
-                mean = 0
-                err = 0
+            # Get default cost vector for protocol
+            default = protocols[proto_index]()
+            # If Mean and error are not well defined, set mean and error to zero
+            if len(cost_array[proto_index][prob_index]) in [0,1]:
+                for cost in default.keys():
+                    processed_array[proto_index][prob_index][cost] = (0, 0)
             else:
-                #mean = sum(cost_array[i][j]) / num_iters
-                mean = stats.mean(cost_array[i][j])
-                # Get standard error
-                err = sp.sem(cost_array[i][j])
-            processed_array[i][j].append(mean)
-            processed_array[i][j].append(err)
+                for cost in default.keys():
+                    raw = [d[cost] for d in cost_array[proto_index][prob_index]]
+                    mean = stats.mean(raw)
+                    err = sp.sem(raw)
+                    processed_array[proto_index][prob_index][cost] = (mean, err)
 
     return processed_array
 
 
-# Do we want this to be a function? We could probably just get away with plotting
-def plot_monte_method(cost_array, title, method_labels):
+def plot_monte_method(cost_array, protocols, title):
+
+    # num_steps == number of probability densities == x-axis.
     num_steps = len(cost_array[0])
     defect_prob = np.linspace(0, 1, num_steps)  # Range over which Monte-Carlo Iterations runs
 
-    proto_index = 0
-    for protocol in cost_array:
-        avg = []
-        err = []
-        for data in cost_array[proto_index]:
-            avg.append(data[0])
-            err.append(data[1])
+    for proto_index in range(len(protocols)):
+        # Get costs for a given protocol
+        default_vector = protocols[proto_index]()
+        for cost in default_vector.keys():
+            d_list = cost_array[proto_index]
+            avg = [d[cost][0] for d in d_list]
+            err = [d[cost][1] for d in d_list]
 
-        plt.title(title)
-        plt.xlabel("Node Deletion Probability")
-        plt.ylabel("Protocol Cost")
-        plt.errorbar(defect_prob, avg, yerr=err, label=method_labels[proto_index])
-        plt.legend()
-        proto_index += 1
+            # Label the curve with the protocol name and the associated cost type.
+            label = protocols[proto_index].__name__ + " " + "(" + str(cost) + ")"
+            plt.errorbar(defect_prob, avg, yerr=err, label=label)
+
+    plt.title(title)
+    plt.xlabel("Node Deletion Probability")
+    plt.ylabel("Protocol Cost")
+    plt.legend()
     plt.show()
-
-
-# New multi-dimensional array
-def multidim_lattice(dim, size, e, f, periodic=False):
-    dim = [size]*dim
-    print(dim)
-    G = nx.grid_graph(dim, periodic)
-
-    Q = QNET.Qnet()
-    for edge in G.edges():
-        u = edge[0]
-        v = edge[1]
-        Q.add_qchan(edge=[u, v], e=e, f=f)
-    return Q
 
 
 # Some functions to test out monte_method
@@ -184,9 +193,6 @@ def simple_head_tail(P):
     B = P.getNode("B")
     return A, B
 
-def simple_protocol(P, head, tail):
-    return QNET.simple_purify(P, head, tail, threshold=10)
-
 def path_exist(P, head, tail):
     if nx.has_path(P, head, tail) is True:
         return 1
@@ -194,22 +200,12 @@ def path_exist(P, head, tail):
         return 0
 
 def path_except():
-    return 0
+    return {'p':0}
 
-def best_fidelity(P, head, tail):
-    return QNET.best_path_cost(P, head, tail, cost_type = 'f')
-
-
-# Example 1
+# Example code
 def example(dim, size):
-    # Keyword arguments for protocols
-    p_kwargs = [{}, {}, {"threshold": 10}]
-
-    # Exception methods for protocols
-    e_methods = [path_except, None, None]
-
     # Multidimensional lattice
-    L = multidim_lattice(dim=dim, size=size, e=1, f=0.9, periodic=False)
+    L = QNET.multidim_lattice(dim=dim, size=size, e=1, f=0.9, periodic=False)
 
     # head_tail method
     def get_ht(dim, size, G):
@@ -234,15 +230,25 @@ def example(dim, size):
 
         return corner_head_tail
 
+    # Head tail method
     corner_head_tail = get_ht(dim, size, L)
 
+    # List of protocols
+    protocols = [QNET.path_exist, QNET.best_costs, QNET.simple_purify]
+
+    # Keyword arguments for protocols
+    p_kwargs = [{}, {}, {"threshold":10}]
+
+    # Exception methods for protocols
+    e_methods = [path_except, None, None]
+
     # Get cost array
-    cost_array = monte_method([path_exist, best_fidelity, QNET.simple_purify],
-                              corner_head_tail, L, num_iters=200, num_steps=20,
+    cost_array = monte_method(protocols,
+                              corner_head_tail, L, num_iters=1000, num_steps=20,
                               protocol_kwargs=p_kwargs, exception_methods=e_methods)
 
     # Plot cost array
-    plot_monte_method(cost_array, title=f"Graph of different protocols against {size}^{dim} percolated graphs",
-                      method_labels=["path_exist", "best_fidelity", "simple_protocol"])
+    plot_monte_method(cost_array, protocols=protocols,
+                      title=f"Graph of Different Protocol Costs Against a {size}^{dim} Lattice")
 
-example(dim = 5, size = 3)
+example(dim = 3, size = 3)

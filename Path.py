@@ -91,10 +91,20 @@ class Path:
             cost += node.costs[cost_type]
 
         # Convert multiplicative costs back to additive costs
-        back_convert = conversions[cost_type.strip("_add")][1]
+        # Fixed a bug here... Maybe this might not work?
+        cost_type = QNET.remove_prefix(cost_type, "add_")
+        back_convert = conversions[cost_type][1]
         cost = back_convert(cost)
 
         return cost
+
+    def cost_vector(self):
+        cv = {}
+        for cost in self.G.cost_vector.keys():
+            if cost.startswith("add_") is False:
+                val = self.cost(cost)
+                cv[cost] = val
+        return cv
 
     # TODO Test this
     def subgraph(self):

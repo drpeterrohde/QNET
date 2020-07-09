@@ -7,11 +7,10 @@ Created on Mon May 25 18:48:05 2020
 """
 
 import QNET
-import Utilities
+import Protocols
 import numpy as np
 import scipy.integrate
 from pvlib import atmosphere
-import warnings
 from skyfield.api import EarthSatellite
 from skyfield.api import Topos, load
 

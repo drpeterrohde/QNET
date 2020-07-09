@@ -93,7 +93,7 @@ class Qnet(nx.Graph):
                               "Costs: " + str(edge_data))
                 qchans += "\n"
 
-        return (f"\n-- Qnodes --\n\n{qnodes}-- Qchans --\n{qchans}")
+        return (f"-- Default cost vector --\n{self.cost_vector}\n-- Qnodes --\n{qnodes}-- Qchans --\n{qchans}")
 
     def add_qnode(self, qnode_type=None, **kwargs):
         """
@@ -190,7 +190,9 @@ class Qnet(nx.Graph):
         :return: Node
         """
         if isinstance(node_name, QNET.Qnode):
-            return node_name
+            for node in self.nodes():
+                if node.name == node_name.name:
+                    return node
         for node in self.nodes():
             if node.name == node_name:
                 return node
