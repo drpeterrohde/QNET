@@ -6,6 +6,8 @@ Created on Fri Mar 6 13:02:25 2020
 import networkx as nx
 import QNET
 import numpy as np
+import copy
+
 
 def multidim_lattice(dim, size, e, f, periodic=False):
     dim = [size]*dim
@@ -20,7 +22,7 @@ def multidim_lattice(dim, size, e, f, periodic=False):
     return Q
 
 
-def altLinGen(n, spacing, e=1, f=0):
+def altLinGen(n, spacing, e=1, f=1):
     '''
     Constructs a linear chain with end Qnodes A and B, and alternating Swapper and Ground nodes in the middle.
 
@@ -86,7 +88,7 @@ def altLinGen(n, spacing, e=1, f=0):
     return Q
 
 
-def altLinSatGen(n, spacing, eVal=1, pxVal=0, pyVal=0, pzVal=0, startTime=0, Line1='', Line2='', *args):
+def altLinSatGen(n, spacing, e=1, f=1, startTime=0, Line1='', Line2='', *args):
     '''
     Constructs a linear chain with end Qnodes A and B, and alternating Swapper and Ground nodes in the middle.
 
@@ -124,18 +126,18 @@ def altLinSatGen(n, spacing, eVal=1, pxVal=0, pyVal=0, pzVal=0, startTime=0, Lin
     Q = QNET.Qnet()
 
     if n > 0:
-        firstNode = QNET.Qnode(name='A', coords=spacing)
+        firstNode = QNET.Qnode(Q, name='A', coords=spacing)
         Q.add_node(firstNode)
 
-    previousNode = QNET.Qnode()
-    currentNode = QNET.Qnode()
+    previousNode = QNET.Qnode(Q)
+    currentNode = QNET.Qnode(Q)
 
     ChannelList = []
 
     if n > 2:
         for i in range(n - 2):
-            GroundNode = QNET.Ground(name=('G' + str(i + 1)), coords=np.multiply(i + 2, spacing))
-            SwapNode = QNET.Swapper(name=('T' + str(i + 1)), coords=np.multiply(i + 2, spacing))
+            GroundNode = QNET.Ground(Q, name=('G' + str(i + 1)), coords=np.multiply(i + 2, spacing))
+            SwapNode = QNET.Swapper(Q, name=('T' + str(i + 1)), coords=np.multiply(i + 2, spacing))
 
             if n > 3:
                 if (i) % 2 == 0:
@@ -149,20 +151,20 @@ def altLinSatGen(n, spacing, eVal=1, pxVal=0, pyVal=0, pzVal=0, startTime=0, Lin
 
             if i > 0:
                 ChannelList.append(
-                    {'edge': (previousNode.name, currentNode.name), 'e': eVal, 'px': pxVal, 'py': pyVal, 'pz': pzVal})
+                    {'edge': (previousNode.name, currentNode.name), 'e': e, 'f': f})
 
             previousNode = currentNode
 
     if n > 1:
-        lastNode = QNET.Qnode(name='B', coords=np.multiply(n, spacing))
+        lastNode = QNET.Qnode(Q, name='B', coords=np.multiply(n, spacing))
         Q.add_node(lastNode)
 
         ChannelList.append(
-            {'edge': (firstNode.name, list(Q.nodes)[1].name), 'e': eVal, 'px': pxVal, 'py': pyVal, 'pz': pzVal})
+            {'edge': (firstNode.name, list(Q.nodes)[1].name), 'e': e, 'f': f})
         ChannelList.append(
-            {'edge': (list(Q.nodes)[n - 2].name, lastNode.name), 'e': eVal, 'px': pxVal, 'py': pyVal, 'pz': pzVal})
+            {'edge': (list(Q.nodes)[n - 2].name, lastNode.name), 'e': e, 'f': f})
 
-    S = QNET.Satellite(name='S', t=startTime, line1=Line1, line2=Line2)
+    S = QNET.Satellite(Q, name='S', t=startTime, line1=Line1, line2=Line2, cartesian=False)
     Q.add_node(S)
 
     nodeList = Q.nodes()
@@ -175,7 +177,7 @@ def altLinSatGen(n, spacing, eVal=1, pxVal=0, pyVal=0, pzVal=0, startTime=0, Lin
     return Q
 
 
-def RegLat(x, y, xspacing, yspacing=[0, 0, 0], eVal=1, pVal=1, pxVal=0, pyVal=0, pzVal=0):
+def regularLatticeGen(x, y, xspacing, yspacing=[0, 0, 0], e=1, f=1):
     '''
     Constructs a 2D Regular Lattice with end Qnodes A and B, and alternating Swapper and Ground nodes in the middle.
 
@@ -214,11 +216,11 @@ def RegLat(x, y, xspacing, yspacing=[0, 0, 0], eVal=1, pVal=1, pxVal=0, pyVal=0,
 
     Q = QNET.Qnet()
 
-    firstNode = QNET.Qnode(name='A', coords=[0, 0, 0])
-    lastNode = QNET.Qnode(name='B', coords=np.add(np.multiply(x - 1, xspacing), np.multiply(y - 1, yspacing)))
+    firstNode = QNET.Qnode(Q, name='A', coords=[0, 0, 0])
+    lastNode = QNET.Qnode(Q, name='B', coords=np.add(np.multiply(x - 1, xspacing), np.multiply(y - 1, yspacing)))
 
-    previousNode = QNET.Qnode()
-    currentNode = QNET.Qnode()
+    previousNode = QNET.Qnode(Q)
+    currentNode = QNET.Qnode(Q)
 
     ChannelList = []
 
@@ -226,9 +228,9 @@ def RegLat(x, y, xspacing, yspacing=[0, 0, 0], eVal=1, pVal=1, pxVal=0, pyVal=0,
     for i in range(x):
         for j in range(y):
 
-            GroundNode = QNET.Ground(name=('G(' + str(i + 1) + ',' + str(j + 1) + ')'),
+            GroundNode = QNET.Ground(Q, name=('G(' + str(i + 1) + ',' + str(j + 1) + ')'),
                                      coords=np.add(np.multiply(i, xspacing), np.multiply(j, yspacing)))
-            SwapNode = QNET.Swapper(name=('T(' + str(i + 1) + ',' + str(j + 1) + ')'),
+            SwapNode = QNET.Swapper(Q, name=('T(' + str(i + 1) + ',' + str(j + 1) + ')'),
                                     coords=np.add(np.multiply(i, xspacing), np.multiply(j, yspacing)))
 
             # Swap nodes at odd positions and Ground nodes at even positions in a Regular Lattice
@@ -238,7 +240,7 @@ def RegLat(x, y, xspacing, yspacing=[0, 0, 0], eVal=1, pVal=1, pxVal=0, pyVal=0,
                 else:
                     currentNode = SwapNode
 
-                    # Linear chain of length 3 exception
+            # Linear chain of length 3 exception
             if (x == 3 and y == 1) or (x == 1 and y == 3):
                 currentNode = GroundNode
 
@@ -264,8 +266,7 @@ def RegLat(x, y, xspacing, yspacing=[0, 0, 0], eVal=1, pVal=1, pxVal=0, pyVal=0,
         for j in range(y - 1):
             currentNode = list(Q.nodes)[j + 1 + (i * y)]
             ChannelList.append(
-                {'edge': (previousNode.name, currentNode.name), 'e': eVal, 'p': pVal, 'px': pxVal, 'py': pyVal,
-                 'pz': pzVal})
+                {'edge': (previousNode.name, currentNode.name), 'e': e, 'f': f})
             previousNode = currentNode
 
     # Constructing the horizontal edges in the Regular Lattice
@@ -274,8 +275,7 @@ def RegLat(x, y, xspacing, yspacing=[0, 0, 0], eVal=1, pVal=1, pxVal=0, pyVal=0,
         for i in range(x - 1):
             currentNode = list(Q.nodes)[j + (i + 1) * y]
             ChannelList.append(
-                {'edge': (previousNode.name, currentNode.name), 'e': eVal, 'p': pVal, 'px': pxVal, 'py': pyVal,
-                 'pz': pzVal})
+                {'edge': (previousNode.name, currentNode.name), 'e': e, 'f': f})
             previousNode = currentNode
 
     Q.add_qchans_from(ChannelList)
@@ -283,4 +283,89 @@ def RegLat(x, y, xspacing, yspacing=[0, 0, 0], eVal=1, pVal=1, pxVal=0, pyVal=0,
 
     return Q
     
+def temporalGen(Q, dt, n, startLayer = 0, endLayer = None):
+    """
+    Creates a temporal extension of given graph. 
+    
+    Creates a temporal extension of given graph to simulate the effect of quantum memory. Each layer(slice) 
+    of this temporal graph is an updated/evolved version of the previous layer by dt time. n such layers of 
+    these time updated graphs are created and only those nodes with quantum memory (node.isMemory == True) 
+    are connected in the temporal dimension. 
+    
+    However, out of all these n time-updated layers of graph Q, we might only want to connect a few in the
+    temporal dimension. The arguments startLayer and endLayer correspond to the number of layer between which 
+    all the graphs are connected. 
+    
+    Example: If startLayer=1 and endLayer=3, only layers from 1 to 3 are connected in temporal dimension. 
+        
+        t=0   -------
+        
+        t=1   ------- startLayer=1
+              | | | |
+        t=2   ------- 
+              | | | |
+        t=3   ------- endLayer=3
+        :
+        t=n-1 -------
+
+    Parameters
+    ----------
+    Q : QNET Graph
+        The spatial graph which is to be utilised to make a spatio-temporal graph.
+    dt : float
+        Time steps by which each layer/slice/graph is to be updated.
+    n : int
+        Number of such layers/slices/graphs to be made.
+    startLayer : int
+        The number corresponding to first layer starting which the layers are connected in temporal dimension.
+        Default value is 0 i.e. the first layer itself. 
+    endLayer : int
+        The number corresponding to last layer at which the layers' connection in temporal dimension ends. 
+        Default value is n-1 i.e. the last layer itself. 
+
+    Returns
+    -------
+    finalGraph : QNET Graph
+        The temporal extension (including both connected and unconnected layers) of given graph Q.
+
+    """
+    
+    if endLayer==None:
+        endLayer = n-1
+    
+    ## Create a list of time-updated graph layers ##
+    G = []    
+    new_graph = copy.deepcopy(Q)    
+    layer_num = 0    
+    for i in range(0,n):
+        C = copy.deepcopy(new_graph)
+        
+        dummy_graph = copy.deepcopy(new_graph)
+        dummy_graph.updateName(layer_num)
+        G.append(dummy_graph)
+        
+        C.update(dt)
+        layer_num = layer_num + 1
+        new_graph = copy.deepcopy(C)
+        
+    ## Join these time-updated graph layers ##
+    assert (0 <= startLayer <= n-1), f"Out of range -- 0 <= startLayer <= n-1 "
+    assert (0 <= endLayer <= n-1), f"Out of range -- 0 <= endLayer <= n-1 "
+    assert (startLayer <= endLayer), f"startLayer <= endLayer <= n-1 "
+                                               
+    
+    finalGraph = QNET.Qnet()
+    
+    for layer_num in range(0, len(G)):
+        finalGraph = nx.compose(finalGraph, G[layer_num])
+        #print(finalGraph)
+    
+    for node in Q.nodes():
+        for layer_num in range(startLayer+1, endLayer+1):
+            if node.isMemory and layer_num>0:
+                u = finalGraph.getNode(str(layer_num-1)+node.name)
+                v = finalGraph.getNode(str(layer_num)+node.name)
+                finalGraph.add_memory_qchan(edge=[u, v], e = u.memory['mem_e'], f = u.memory['mem_f'])   
+                
+    return finalGraph
     

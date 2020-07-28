@@ -80,6 +80,49 @@ def make_cost_vector(Q, **kwargs):
 
     return cost_vector
 
+def make_memory_vector(Q, **kwargs):
+    """
+    Creates a dictionary of memory costs for a node with quantum memory.
+    Memory Efficiency and Memory Fidelity are initalized, as are their additive costs and any other key word arguements specified
+    by the user.
+    
+    This memory cost vector is then used to create quantum channels in the temporal dimension. 
+
+    :param QNET Q: Corresponding QNET in which memory nodes are present
+    :param float kwargs: Other costs or qualifying attributes
+    :return dictionary: Memory Cost vector
+    """
+    # The default cost vector
+    memory_vector = copy.copy(Q.memory_vector)
+    # The valid ranges of each cost
+    memory_ranges = Q.memory_ranges
+    # The conversion methods from multiplicative cost to additive and vice versa
+    memory_conversions = Q.memory_conversions
+
+    # Update the cost vector with all valid costs found in kwargs
+    for item in kwargs.items():
+        key = item[0]
+        if key in memory_vector:
+            memory_vector.update([item])
+
+    # Assert that costs are within the correct range:
+    for item in memory_vector.items():
+        name, value = item[0], item[1]
+        memory_range = memory_ranges[name]
+        cost_min, cost_max = memory_range[0], memory_range[1]
+        assert (cost_min <= value <= cost_max), f"Out of range -- ({cost_min} <= {name} <= {cost_max}), " + \
+                                                f"{name} == {value}"
+
+    # Initialize additive costs
+    additive_memory = {}
+    for item in memory_vector.items():
+        name, value = item[0], item[1]
+        add_memory_func = memory_conversions[name][0]
+        additive_memory["add_" + name] = add_memory_func(value)
+    memory_vector.update(additive_memory)
+
+    return memory_vector
+
 
 def best_path(Q, source, target, cost_type):
     """

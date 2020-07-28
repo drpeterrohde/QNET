@@ -20,12 +20,13 @@ class Qnode:
     Default Qnode Class
     """
 
-    def __init__(self, Q, name=None, coords=None, **kwargs):
+    def __init__(self, Q, name=None, coords=None, isMemory=False, **kwargs):
         """
         Qnode Initialization
         :param Q: The Qnet graph intended for the node.
         :param name: The name of the Qnode.
         :param coords: Cartesian coordinates. Usage: [x,y,z]
+        :param isMemory: Boolean to describe if the node has quantum memory or not
         :param kwargs: Costs that are valid for the Qnet graph Q.
         """
         if name is None:
@@ -37,10 +38,15 @@ class Qnode:
 
         # Initialize cost vector
         cost_vector = QNET.make_cost_vector(Q, **kwargs)
+        
+        # Initialize memory cost vector
+        memory_vector = QNET.make_memory_vector(Q, **kwargs)
 
         self.name = name
         self.coords = coords
         self.costs = cost_vector
+        self.memory = memory_vector
+        self.isMemory = isMemory
 
     def __str__(self):
         return self.name
@@ -75,8 +81,14 @@ class Qnode:
             kwargs.pop(arg)
 
         # Update node.costs with remaining kwargs
+        for item in kwargs:
+            print(kwargs)
         cost_vector = QNET.make_cost_vector(Q, **kwargs)
         self.costs = cost_vector
+        
+        # Update node.memory with remaining kwargs
+        memory_vector = QNET.make_memory_vector(Q, **kwargs)
+        self.memory = memory_vector
 
 
 class Ground(Qnode):
@@ -138,6 +150,9 @@ class Satellite(Qnode):
         """
         # Initialise coordinate type
         self.cartesian = cartesian
+        
+        super().__init__(Q, name, coords, **kwargs)
+
 
         if cartesian is True:
             if v_cart is None:
@@ -171,7 +186,7 @@ class Satellite(Qnode):
                 subpoint = geometry.subpoint()
                 geo_coords = [int(subpoint.latitude.degrees), int(subpoint.longitude.degrees),
                               int(subpoint.elevation.km)]
-                super().__init__(name, geo_coords, e, p, **kwargs)
+                super().__init__(Q, name, geo_coords, **kwargs)
 
             # TODO: Write descriptions for these variables here
             self.ts = ts
@@ -179,7 +194,6 @@ class Satellite(Qnode):
             self.t_startTime = t_startTime
             self.t_new = t_new
             self.satellite = satellite
-            super().__init__(name, coords, e, p, **kwargs)
 
             print(t_now.utc)
 
@@ -325,3 +339,18 @@ class Swapper(Qnode):
         assert swap_prob >= 0.5
         self.swap_prob = swap_prob
         super().__init__(Q, name, coords, **kwargs)
+        
+        
+class Memory(Qnode):
+    def __init__(self, Q, name=None, coords=None, mem_e = 1, mem_f=1, **kwargs):
+        #assert Q is not None
+        #assert swap_prob >= 0.5
+        #self.swap_prob = swap_prob
+        super().__init__(Q, name, coords, **kwargs)       
+        
+        self.t_memory = 0
+        
+    def timeUpdate(self, dt):
+        self.t_memory = self.t_memory + dt
+        return
+    

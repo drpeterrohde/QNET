@@ -11,6 +11,7 @@ import copy
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import art3d
+from mpl_toolkits.basemap import Basemap
 
 
 def getTimeArr(tMax, dt):
@@ -403,7 +404,7 @@ def plotMap(Q, tMax, dt):
     Plot QNET on a map. 
     
     For static nodes: Treat x-coord as latitude, y-coord as longitude. z-coord is ignored.
-    For sateelites: Color of the trajectory progresses from 'black' to 'red' to show the direction of time. 
+    For satellites: Color of the trajectory progresses from 'black' to 'red' to show the direction of time. 
     
     Parameters
     ----------

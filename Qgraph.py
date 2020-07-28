@@ -15,7 +15,7 @@ typeDict = {'Ground': QNET.Ground,
 
 
 class Qnet(nx.Graph):
-    def __init__(self, cost_vector=None, cost_ranges=None, conversions=None, incoming_graph_data=None, **attr):
+    def __init__(self, cost_vector=None, cost_ranges=None, conversions=None, memory_vector=None, memory_ranges=None, memory_conversions=None, incoming_graph_data=None, **attr):
         """
         Initialization method
         :param cost_vector:
@@ -59,9 +59,30 @@ class Qnet(nx.Graph):
                 assert(len(functions) == 2),\
                     "Usage: conversions = {'cost': [convert_to_additive, convert_to_multiplicative]}"
 
+        
+        if memory_vector is None and memory_conversions is None:
+            memory_vector = {'mem_e': 1, 'mem_f': 1}
+            memory_ranges = {'mem_e': (0, 1), 'mem_f': (0.5, 1)}
+            memory_conversions = {'mem_e': [QNET.to_log, QNET.from_log], 'mem_f': [QNET.to_add_f, QNET.from_add_f]}
+        else:
+            assert set(memory_vector.keys()) == set(memory_ranges.keys()), \
+                "Keys in \"cost_vector\" do not match keys in \"cost_ranges\""
+            assert set(memory_vector.keys()) == set(conversions.keys()), \
+                "Keys in \"cost_vector\" do not match keys in \"conversions\""
+            for rng in memory_ranges.values():
+                assert(len(rng) == 2),\
+                    "Usage: cost_ranges = {cost: (min_val, max_val)}"
+            for functions in conversions.values():
+                assert(len(functions) == 2),\
+                    "Usage: conversions = {'cost': [convert_to_additive, convert_to_multiplicative]}"
+                    
         self.cost_vector = cost_vector
         self.cost_ranges = cost_ranges
         self.conversions = conversions
+
+        self.memory_vector = memory_vector
+        self.memory_ranges = memory_ranges
+        self.memory_conversions = memory_conversions
         super().__init__(incoming_graph_data, **attr)
 
     def __str__(self):
@@ -142,11 +163,6 @@ class Qnet(nx.Graph):
         will be automatically calculated from current positions and added to the cost array.
 
         :param list edge: Array-like object of two qnodes to be connected
-        :param float e: Proportion of photons that pass through the channel
-        :param float p: Proportion of surviving photons that haven't changed state
-        :param float px: Probability of x-flip (Bitflip)
-        :param float py: Probability of y-flip
-        :param float pz: Probability of z-flip (Dephasing)
         :param float kwargs: Other costs or qualifying attributes
         :return: None
         """
@@ -175,6 +191,7 @@ class Qnet(nx.Graph):
 
         cost_vector = QNET.make_cost_vector(self, **kwargs)
         self.add_edge(u, v, **cost_vector)
+        
 
     def add_qchans_from(self, cbunch):
         """
@@ -182,6 +199,44 @@ class Qnet(nx.Graph):
         """
         for edge in cbunch:
             self.add_qchan(**edge)
+            
+    def add_memory_qchan(self, edge=None, **kwargs):
+        """
+        Add a temporal Qchan to the graph to show time-connection of nodes with quantum memory. 
+        
+        The only difference with add_qchan() is that if either of the node types are Satellites, the airCosts
+        will be not be updated since the memory costs are inherent properties of the nodes themselves and 
+        hence, are time independent.
+
+        :param list edge: Array-like object of two qnodes to be connected
+        :param float kwargs: Other costs or qualifying attributes
+        :return: None
+        """
+
+        # Assert edge is valid
+        assert (edge != None), "\'edge\' must be an array-like object of two qnodes"
+        assert (len(edge) == 2), "\'edge\' must be an array-like object of two qnodes"
+
+        u = self.getNode(str(edge[0]))
+        v = self.getNode(str(edge[1]))
+
+        if u is None:
+            u = QNET.Ground(self, name=str(edge[0]))
+            self.add_node(u)
+        if v is None:
+            v = QNET.Ground(self, name=str(edge[1]))
+            self.add_node(v)
+
+        cost_vector = QNET.make_cost_vector(self, **kwargs)
+        self.add_edge(u, v, **cost_vector)
+        
+
+    def add_memory_qchans_from(self, cbunch):
+        """
+        Adds a list of temporal channels connecting layers/slices/graphs
+        """
+        for edge in cbunch:
+            self.add_memory_qchan(**edge)
 
     def getNode(self, node_name):
         """
@@ -241,3 +296,22 @@ class Qnet(nx.Graph):
                     # Update edge
                     self.remove_edge(s, n)
                     self.add_qchan(edge=[s.name, n.name], e=new_e, p=new_p)
+                    
+    def updateName(self, n):
+        """
+        Updates names of nodes for different layers of spatio-temporal graph. 
+        
+        Changes "nodeName" to str(n)+"nodeName". 
+
+        Parameters
+        ----------
+        n : int
+            Graph layer number in spatio-temporal description of quantum memory.
+
+        Returns
+        -------
+        None.
+
+        """
+        for node in self.nodes:
+            node.name = str(n)+node.name
