@@ -14,12 +14,12 @@ X = QNET.Qnet()
 Qnodes = [{'name': 'A', 'coords': [50, 0, 0]},
           {'name': 'B', 'coords': [150, 0, 0]},
           {'name': 'G', 'qnode_type': 'Ground', 'coords': [100, 0, 0]},
-          {'name': 'S', 'qnode_type': 'Satellite', 'coords': [0, 0, 100], 'v_cart':[20, 0], 'range':100}]
+          {'name': 'S', 'qnode_type': 'Satellite', 'coords': [-200, 0, 100], 'v_cart':[20, 0], 'range':100}]
 
 X.add_qnodes_from(Qnodes)
 
-Qchans = [{'edge':('A', 'G'), 'e': 0.4, 'f': 0.9},
-          {'edge':('G', 'B'), 'e': 0.4, 'f': 0.9},
+Qchans = [{'edge':('A', 'G'), 'e': 0.95, 'f': 0.7},
+          {'edge':('G', 'B'), 'e': 0.95, 'f': 0.7},
           {'edge':('A', 'S'), 'e': 1, 'f': 1},
           {'edge':('B', 'S'), 'e': 1, 'f': 1}]
 

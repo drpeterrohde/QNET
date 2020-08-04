@@ -315,7 +315,7 @@ class Satellite(Qnode):
             """
 
             # Attenuation coefficient
-            K = 0.001
+            K = 0.005
             return (1 + np.exp(-K*d))/2
             # return QNET.convert(d * K, 'linear')
 

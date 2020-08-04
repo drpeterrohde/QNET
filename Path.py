@@ -9,6 +9,7 @@ Created on Tue Mar 24 12:00:05 2020
 import networkx as nx
 import QNET
 import numpy as np
+import collections
 
 
 class Path:
@@ -26,6 +27,7 @@ class Path:
         self.node_array = node_array
         self.head = node_array[0]
         self.tail = node_array[len(self.node_array) - 1]
+        self.cost_vector = self.get_cost_vector()
 
         # Assert path is valid in G
         # Maybe we could just incorperate this into is_valid instead?
@@ -36,7 +38,8 @@ class Path:
             assert False, f"Path {self.stringify()} does not exist in Qnet."
 
     def __str__(self):
-        return self.stringify()
+        return "Path: " + self.stringify() + ", Cost: " + str(self.cost_vector)
+        # return self.stringify()
 
     def __repr__(self):
         return self.stringify()
@@ -53,58 +56,44 @@ class Path:
                 break
         return has_ground
 
-    def cost(self, cost_type):
-        """
-        Calculate the cost of the path for a given costType.
-        If calculating efficiency, does not take into account cost due to swapper node.
+    def get_cost_vector(self):
+        # List of cost vectors for all elements in the path:
+        element_cvs = []
 
-        Calculate the cost of the path for a given cost type
-        :param str costType:
-        :param str exclude: Node type to exclude from path length
-        :return: cost
-        """
-
-        # Convert cost to additive form
-        conversions = self.G.conversions
-        assert cost_type in conversions, f"Invalid cost type. \"{cost_type}\" not in {str([key for key in conversions])}"
-        cost_type = "add_" + cost_type
-
-        cost = 0
+        # Get cost vectors of edges
         path_len = len(self.node_array)
-
-        # Sum all edge costs of the path
         i = 0
         while i < path_len - 1:
             cur = self.node_array[i]
             nxt = self.node_array[i + 1]
             edge_data = self.G.get_edge_data(cur, nxt)
-
-            assert edge_data is not None, "Path does not exist in graph"
-            assert edge_data[cost_type] is not None, \
-                f"costType \'{cost_type}\' does not exist between qnodes \'{cur.name}\' and \'{nxt.name}\'"
-
-            cost += edge_data[cost_type]
+            element_cvs.append(edge_data)
             i += 1
 
-        # Sum all node costs of the path
+        # Get cost vectors of nodes
         for node in self.node_array:
-            cost += node.costs[cost_type]
+            element_cvs.append(node.costs)
 
-        # Convert multiplicative costs back to additive costs
-        # Fixed a bug here... Maybe this might not work?
-        cost_type = QNET.remove_prefix(cost_type, "add_")
-        back_convert = conversions[cost_type][1]
-        cost = back_convert(cost)
+        # Cost vectors have identical keys
+        # Sum all key elements together, convert additive costs to correct value, update dictionary
+        def sum_cost_vectors(cv_list):
+            counter = collections.Counter()
+            for d in cv_list:
+                counter.update(d)
+            return dict(counter)
 
-        return cost
+        new_cv = sum_cost_vectors(element_cvs)
+        # Convert additive costs into regular costs:
+        for cost_type in new_cv:
+            if cost_type.startswith("add_"):
+                # Get additive cost
+                cost = new_cv[cost_type]
+                # Remove prefix of cost_type
+                cost_type = QNET.remove_prefix(cost_type, "add_")
+                # Convert additive cost to normal, add it to new_cv
+                new_cv[cost_type] = self.G.conversions[cost_type][1](cost)
 
-    def cost_vector(self):
-        cv = {}
-        for cost in self.G.cost_vector.keys():
-            if cost.startswith("add_") is False:
-                val = self.cost(cost)
-                cv[cost] = val
-        return cv
+        return new_cv
 
     # TODO Test this
     def subgraph(self):

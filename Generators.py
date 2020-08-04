@@ -6,6 +6,7 @@ Created on Fri Mar 6 13:02:25 2020
 import networkx as nx
 import QNET
 import numpy as np
+import random
 import copy
 
 
@@ -285,24 +286,24 @@ def regularLatticeGen(x, y, xspacing, yspacing=[0, 0, 0], e=1, f=1):
     
 def temporalGen(Q, dt, n, startLayer = 0, endLayer = None):
     """
-    Creates a temporal extension of given graph. 
-    
-    Creates a temporal extension of given graph to simulate the effect of quantum memory. Each layer(slice) 
-    of this temporal graph is an updated/evolved version of the previous layer by dt time. n such layers of 
-    these time updated graphs are created and only those nodes with quantum memory (node.isMemory == True) 
-    are connected in the temporal dimension. 
-    
+    Creates a temporal extension of given graph.
+
+    Creates a temporal extension of given graph to simulate the effect of quantum memory. Each layer(slice)
+    of this temporal graph is an updated/evolved version of the previous layer by dt time. n such layers of
+    these time updated graphs are created and only those nodes with quantum memory (node.isMemory == True)
+    are connected in the temporal dimension.
+
     However, out of all these n time-updated layers of graph Q, we might only want to connect a few in the
-    temporal dimension. The arguments startLayer and endLayer correspond to the number of layer between which 
-    all the graphs are connected. 
-    
-    Example: If startLayer=1 and endLayer=3, only layers from 1 to 3 are connected in temporal dimension. 
-        
+    temporal dimension. The arguments startLayer and endLayer correspond to the number of layer between which
+    all the graphs are connected.
+
+    Example: If startLayer=1 and endLayer=3, only layers from 1 to 3 are connected in temporal dimension.
+
         t=0   -------
-        
+
         t=1   ------- startLayer=1
               | | | |
-        t=2   ------- 
+        t=2   -------
               | | | |
         t=3   ------- endLayer=3
         :
@@ -318,10 +319,10 @@ def temporalGen(Q, dt, n, startLayer = 0, endLayer = None):
         Number of such layers/slices/graphs to be made.
     startLayer : int
         The number corresponding to first layer starting which the layers are connected in temporal dimension.
-        Default value is 0 i.e. the first layer itself. 
+        Default value is 0 i.e. the first layer itself.
     endLayer : int
-        The number corresponding to last layer at which the layers' connection in temporal dimension ends. 
-        Default value is n-1 i.e. the last layer itself. 
+        The number corresponding to last layer at which the layers' connection in temporal dimension ends.
+        Default value is n-1 i.e. the last layer itself.
 
     Returns
     -------
@@ -329,43 +330,65 @@ def temporalGen(Q, dt, n, startLayer = 0, endLayer = None):
         The temporal extension (including both connected and unconnected layers) of given graph Q.
 
     """
-    
+
     if endLayer==None:
         endLayer = n-1
-    
+
     ## Create a list of time-updated graph layers ##
-    G = []    
-    new_graph = copy.deepcopy(Q)    
-    layer_num = 0    
+    G = []
+    new_graph = copy.deepcopy(Q)
+    layer_num = 0
     for i in range(0,n):
         C = copy.deepcopy(new_graph)
-        
+
         dummy_graph = copy.deepcopy(new_graph)
         dummy_graph.updateName(layer_num)
         G.append(dummy_graph)
-        
+
         C.update(dt)
         layer_num = layer_num + 1
         new_graph = copy.deepcopy(C)
-        
+
     ## Join these time-updated graph layers ##
     assert (0 <= startLayer <= n-1), f"Out of range -- 0 <= startLayer <= n-1 "
     assert (0 <= endLayer <= n-1), f"Out of range -- 0 <= endLayer <= n-1 "
     assert (startLayer <= endLayer), f"startLayer <= endLayer <= n-1 "
-                                               
-    
+
+
     finalGraph = QNET.Qnet()
-    
+
     for layer_num in range(0, len(G)):
         finalGraph = nx.compose(finalGraph, G[layer_num])
         #print(finalGraph)
-    
+
     for node in Q.nodes():
         for layer_num in range(startLayer+1, endLayer+1):
             if node.isMemory and layer_num>0:
                 u = finalGraph.getNode(str(layer_num-1)+node.name)
                 v = finalGraph.getNode(str(layer_num)+node.name)
-                finalGraph.add_memory_qchan(edge=[u, v], e = u.memory['mem_e'], f = u.memory['mem_f'])   
-                
+                finalGraph.add_memory_qchan(edge=[u, v], e = u.memory['mem_e'], f = u.memory['mem_f'])
+
     return finalGraph
-    
+
+
+
+def percolate(Q, prob, head_tail_method):
+    """
+    Percolates a graph with some probability, making sure not to remove particular nodes of interest (head, tail)
+    :param Q: Qnet Graph
+    :param prob: Probability of not removing a given node not in (head, tail)
+    :param head: Qnode
+    :param tail: Qnode
+    :return: Percolated Graph, head node, tail node
+    """
+    C = copy.deepcopy(Q)
+    head, tail = head_tail_method(C)
+
+    kill_list = []
+    for node in C.nodes():
+        xd = random.uniform(0,1)
+        if xd < prob:
+            if node not in (head, tail):
+                kill_list.append(node)
+    C.remove_nodes_from(kill_list)
+    return C, head, tail

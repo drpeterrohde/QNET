@@ -1,54 +1,114 @@
 """
 Costs.py contains all of the relevant software for instantiating cost vectors, converting between various cost types
 and calculating optimal path costs
-
-Definitions:
-    p:
-        Fidelity.
-    e:
-        Efficiency. The proportion of photons that make it through a channel
-    log_e:
-        -log(e)
-    d:
-        -log(abs(1 - 2p))
 """
 import networkx as nx
 import QNET
 import numpy as np
 import copy
-import string
 
 def remove_prefix(s, prefix):
+    """
+    Remove the prefix of a string
+    Parameters
+    ----------
+    s: str
+    prefix: str
+
+    Returns
+    -------
+    str
+
+    """
     return s[len(prefix):] if s.startswith(prefix) else s
 
 # Basic conversions
 def to_log(x):
+    """
+    Convert a number to its negative log
+    Parameters
+    ----------
+    x: float
+
+    Returns
+    -------
+    float
+
+    """
     return -np.log(x) + 0
 
 
 def from_log(x):
+    """
+    Convert a number from its negative log
+    Parameters
+    ----------
+    x: float
+
+    Returns
+    -------
+    float
+
+    """
     return np.exp(-x)
 
 
 def to_add_f(x):
+    """
+    Convert fidelity to its additive form
+    Parameters
+    ----------
+    x: float
+        Fidelity
+
+    Returns
+    -------
+    float
+
+    """
     return -np.log(np.abs(2 * x - 1)) + 0
 
 
 def from_add_f(x):
+    """
+    Convert from additive form of fidelity to fidelity
+    Parameters
+    ----------
+    x: float
+        Additive fidelity
+
+    Returns
+    -------
+    float
+    """
     return (1 + np.exp(-1 * x)) / 2
 
 
 def make_cost_vector(Q, **kwargs):
     """
-    Creates a dictionary of costs for a node or edge.
-    Efficiency and Fidelity are initalized, as are their additive costs and any other key word arguements specified
-    by the user.
+    Creates a cost vector (that includes additive costs) for an object in the graph Q.
 
-    :param float e: Proportion of photons that pass through the channel
-    :param float p: Proportion of surviving photons that haven't changed state. Range: (0.5, 1)
-    :param float kwargs: Other costs or qualifying attributes
-    :return dictionary: Cost vector
+    Parameters
+    ----------
+    Q: Qnet()
+        The graph with reference to the cost vector
+    kwargs
+        Keyword arguements for the cost vector
+
+    Returns
+    -------
+    dict
+
+    Warnings
+    --------
+    Additional costs specified in **kwargs that are not in Q.cost_vector will not be added. This is because
+    such costs do not have an associated range or additive conversion method.
+
+    Raises
+    AssertionError
+        If any of the costs are out of their specified ranges
     """
+
     # The default cost vector
     cost_vector = copy.copy(Q.cost_vector)
     # The valid ranges of each cost
@@ -124,6 +184,36 @@ def make_memory_vector(Q, **kwargs):
     return memory_vector
 
 
+def convert_cost_vector(Q, cost_vector=None, add_cost_vector=None):
+    """
+    Convert a cost_vector to or from its additive form
+
+    NOTE: Currently useless since the additive costs of the cost vector are not currently a seperate
+    object.
+
+    Parameters
+    ----------
+    Q
+    cost_vector
+    add_cost_vector
+
+    Returns
+    -------
+
+    """
+    assert(cost_vector is not None and add_cost_vector is not None)
+    new_cv = {}
+    if cost_vector is not None:
+        for cost_type in cost_vector:
+            cost = cost_vector[cost_type]
+            new_cv[cost_type] = Q.conversions[cost_type][0](cost)
+    elif add_cost_vector is not None:
+        for cost_type in add_cost_vector:
+            cost = add_cost_vector[cost_type]
+            new_cv[cost_type] = Q.conversions[cost_type][1](cost)
+    return new_cv
+
+
 def best_path(Q, source, target, cost_type):
     """
     Given a source node, target node, and a cost type, this function returns the path that optimises this cost.
@@ -133,7 +223,6 @@ def best_path(Q, source, target, cost_type):
     :param cost_type: Any valid cost type from the cost vector
     :return: string
     """
-
     def get_weight_function(costType):
         """
         Given a costType, returns a corresponding weight_function
@@ -172,7 +261,6 @@ def best_path_cost(Q, source, target, cost_type):
     """
     Get the lowest path cost in a Qnet for a given costType.
     Considers edge weights and node weights
-    # TODO Considers only valid paths.
 
     :param Q: Qnet Graph
     :param Union[str, Qnode] source: Source node

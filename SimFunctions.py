@@ -30,9 +30,20 @@ def getTimeArr(tMax, dt):
     return np.arange(0, tMax, dt)
 
 
-def sim_all_simple(G, source, target, tMax, dt, cost_type = None):
-    # Get cost arrays for all simple paths over time
-
+def sim_all_simple(G, source, target, tMax, dt, cost_type=None):
+    """
+    Get the cost arrays for all simple paths over time
+    :param G: Qnet Graph
+    :type G: Qnet()
+    :param source: Qnode
+    :param target: Qnode
+    :param tMax: Timespan
+    :type tMax: float
+    :param dt: Time interval
+    :type dt: float
+    :param cost_type: string, optional
+    :return: Dictionary of paths to a list of cost arrays over time
+    """
     C = copy.deepcopy(G)
 
     # get source and target from names
@@ -59,10 +70,10 @@ def sim_all_simple(G, source, target, tMax, dt, cost_type = None):
             # Get the cost of each path and append it to respective array
             if cost_type is None:
                 # Fetch all costs in cost vector
-                cost = path_arr[j].cost_vector()
+                cost = path_arr[j].cost_vector
             else:
                 # Fetch specified cost
-                cost = path_arr[j].cost(cost_type)
+                cost = path_arr[j].cost_vector[cost_type]
             path_dict[path_arr[j]].append(cost)
             j += 1
 
@@ -78,7 +89,19 @@ def sim_all_simple(G, source, target, tMax, dt, cost_type = None):
     return path_dict
 
 
-def sim_protocol(G, source, target, protocol, tMax, dt,):
+def sim_protocol(G, source, target, protocol, tMax, dt):
+    """
+    Get the cost arrays of a simple protocol over time
+    :param G: Qnet Graph
+    :type G: Qnet()
+    :param source: Qnode
+    :param target: Qnode
+    :param tMax: Timespan
+    :type tMax: float
+    :param dt: Time interval
+    :type dt: float
+    :return: List of cost arrays for the protocol over time.
+    """
     C = copy.deepcopy(G)
     u = C.getNode(source)
     v = C.getNode(target)
@@ -106,6 +129,7 @@ def plot_cv(x, cva, label):
 
 
 def sim_optimal_cost(G, source_name, target_name, cost_type, tMax, dt):
+    # TODO: Not working
     """
     Calculate the costs of the lowest cost path from "source" to "target" over time.
     :param G: Qnet Graph
@@ -120,8 +144,6 @@ def sim_optimal_cost(G, source_name, target_name, cost_type, tMax, dt):
 
     u = C.getNode(source_name)
     v = C.getNode(target_name)
-
-    assert cost_type in ['e', 'p'], "Please choose a supported cost type from {'e', 'p'}"
 
     # Initialize arrays
     cost_arr = []
@@ -198,8 +220,14 @@ def plot_2d(Q, node_label = None, edge_label=None, title=None, FOV=('x', 'y')):
     Edge costs listed are rounded to four significant figures
 
     :param Q: Qnet Graph
-    :param string label: Optional. Cost of edge to be labeled
-    :param strings FOV: Optional. Field of view orientation
+    :param node_label: Node cost to be labeled
+    :type node_label: string, optional
+    :param edge_label: Edge cost to be labeled
+    :type edge_label: string, optional
+    :param title: Title of the graph
+    :type title: string
+    :param FOV: Field of view. Choose any pair of cartesian axes. I.E. ('x','y'), ('y','z')
+    :type FOV: (string, string), optional
     :return:
     """
     # Dictionary of node positions
@@ -240,6 +268,7 @@ def plot_2d(Q, node_label = None, edge_label=None, title=None, FOV=('x', 'y')):
                     cost = round(Q.edges[node, nbr][edge_label], 4)
                     edge_labels[(node, nbr)] = str(edge_label) + ' = ' + str(cost)
 
+    # draw_networkx
     nx.draw_networkx(Q, pos=pos_dict, node_color=node_colours)
     nx.draw_networkx_labels(Q, pos=offset, labels=node_labels)
     nx.draw_networkx_edge_labels(Q, pos_dict, edge_labels=edge_labels)
@@ -250,28 +279,29 @@ def plot_2d(Q, node_label = None, edge_label=None, title=None, FOV=('x', 'y')):
     plt.show()
 
 
-def plot_3d(Q):
+def plot_3d(Q, title=None):
     """
     Draws a 3d plot of a Qnet graph
     Parameters
     :param Q: Qnet Graph
+    :param title: Title of Graph
     :return:
     """
+    # Create new matplotlib figure and add axes
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
 
-    # Note widget requires external packkage jupyter matplotlib
-    # %matplotlib widget
-
     for node in Q.nodes:
-        x = node.coords[0]
-        y = node.coords[1]
-        z = node.coords[2]
-
+        x, y, z = node.coords[0], node.coords[1], node.coords[2]
         # Dictionary between colours and node types
         qnode_color = {QNET.Qnode: 'r', QNET.Ground: 'y', QNET.Swapper: 'c', QNET.Satellite: 'b'}
         ax.scatter(x, y, z, c=qnode_color[type(node)], marker='o')
         ax.text(x, y, z, '%s' % node.name, size=12, zorder=1)
+
+        # Draw arrow for satellite velocity
+        if isinstance(node, QNET.Satellite):
+            v = node.velocity
+            ax.quiver(x, y, z, v[0], v[1], 0, length = 1.5)
 
     for edge in Q.edges:
         xs = [edge[0].coords[0], edge[1].coords[0]]
@@ -282,7 +312,10 @@ def plot_3d(Q):
         else:
             line = art3d.Line3D(xs, ys, zs)
         ax.add_line(line)
-    plt.show(fig)
+    if title is not None:
+        plt.title(f"{title}")
+    fig.show()
+
     
 def satTrajectory(Q, u, tMax, dt):
     '''
@@ -326,10 +359,17 @@ def satTrajectory(Q, u, tMax, dt):
 
 
 def plot_paths(Q, tMax, dt):
+    """
+    Plot the costs of all simple paths over time along with the cost from simple_purify
+    :param Q: Qnet Graph
+    :param tMax: Maximum time
+    :param dt: Size of time increment
+    :return: None
+    """
     # Get Time Array
     time_arr = QNET.getTimeArr(tMax, dt)
 
-    # Plot the losses of every simple path over time
+    # Plot the costs of every simple path over time
     path_dict = sim_all_simple(Q, 'A', 'B', tMax, dt)
     for path in path_dict:
         for cost in Q.cost_vector.keys():

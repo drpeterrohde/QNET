@@ -78,9 +78,10 @@ def simple_swap(Q, source, dest):
             swap_switch = True
             if swap_candidate == None:
                 swap_candidate = cur
-            # If we had another swap candidate previously, update swap_candidate to be cheaper option
-            elif swap_candidate.costs['e'] < cur.costs['e']:
+            # If we had another swap candidate previously, update swap_candidate to be better efficiency option
+            elif swap_candidate.swap_prob < cur.swap_prob:
                 swap_candidate = cur
+            local_eff *= cur.costs['e']
 
         # If current node is a Ground and we've seen a Swapper, we perform a swap with the local resources
         # (Front-Ground, Swapper, Back-Ground) and update net_eff.
@@ -90,7 +91,7 @@ def simple_swap(Q, source, dest):
 
             # Update net_eff to local_eff if net_eff is smaller
             if local_eff < net_eff:
-                 net_eff = local_eff
+                net_eff = local_eff
 
             # Add the swapper we were considering to the list of swappers used
             swap_list.append(swap_candidate)
@@ -143,8 +144,7 @@ def simple_swap(Q, source, dest):
 
     # Sum all node efficiencies except for swappers
     for node in path.node_array:
-        if not isinstance(node, QNET.Swapper):
-            no_swap *= node.costs['e']
+        no_swap *= node.costs['e']
 
     # DEBUG: For now, return both swap and no swap:
     return(no_swap, net_eff)
@@ -197,7 +197,7 @@ def purify(Q, source, target):
         new_path = QNET.Path(Q, path)
         # check if path is valid
         if new_path.is_valid() == True:
-            f = new_path.cost('f')
+            f = new_path.cost_vector['f']
             f_arr.append(f)
         else:
             pass
@@ -252,8 +252,10 @@ def simple_purify(Q = None, head = None, tail = None, threshold = None):
 
     # Find the best path in terms of fidelity,
     path = QNET.best_path(C, head, tail, 'f')
-    pur_f = path.cost('f')
-    pur_e = path.cost('e')
+    # pur_f = path.cost('f')
+    pur_f = path.cost_vector['f']
+    # pur_e = path.cost('e')
+    pur_e = path.cost_vector['e']
     path.remove_edges()
     path_counter = 1
 
@@ -263,8 +265,10 @@ def simple_purify(Q = None, head = None, tail = None, threshold = None):
             if path_counter > threshold:
                 break
         path = QNET.best_path(C, head, tail, 'f')
-        new_f = path.cost('f')
-        new_e = path.cost('e')
+        # new_f = path.cost('f')
+        new_f = path.cost_vector['f']
+        # new_e = path.cost('e')
+        new_e = path.cost_vector['e']
 
         # Efficiency is weakest-link. Update pur_e to whatever the lowest path efficiency is.
         if new_e < pur_e:
